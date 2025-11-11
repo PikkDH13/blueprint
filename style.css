@@ -1,0 +1,186 @@
+/* Light & Dark Theme Variables */
+:root {
+  --accent-start: #3b65fd;
+  --accent-end: #00c3ff;
+}
+
+[data-theme="light"] {
+  --bg: #ffffff;
+  --fg: #111111;
+  --muted: #666666;
+  --card-bg: #f9f9f9;
+  --card-ring: #eeeeee;
+}
+
+[data-theme="dark"] {
+  --bg: #000000;
+  --fg: #eeeeee;
+  --muted: #999999;
+  --card-bg: #111111;
+  --card-ring: #222222;
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Base & Typography */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.7 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  text-rendering: optimizeLegibility;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Layout Containers */
+.wrap { max-width: 740px; margin: 0 auto; padding: 0 24px; }
+.hero { padding-top: 0px; padding-bottom: 70px; }
+.section { padding: 54px 0; border-top: 1px solid var(--card-ring); }
+.center { text-align: center; }
+
+/* Header & Navigation */
+.nav { display: flex; align-items: center; justify-content: space-between; padding-top: 24px; padding-bottom: 1px; }
+.brand {
+  font-weight: 700;
+  text-decoration: none;
+  background: linear-gradient(90deg, var(--accent-start), var(--accent-end), var(--accent-start));
+  background-size: 200% auto;
+  color: #fff;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 5s ease infinite;
+}
+#theme {
+  background: transparent;
+  border: 1px solid var(--card-ring);
+  color: var(--fg);
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+#theme:hover { border-color: var(--muted); }
+
+/* Hero Section */
+.glyph { width: 64px; height: 64px; margin: 0 auto 16px; opacity: 0.9; }
+h1 { font-size: 40px; line-height: 1.2; margin: 8px 0 16px; font-weight: 700; }
+h2 { font-size: 24px; line-height: 1.3; margin-bottom: 24px; font-weight: 600; }
+h3 { font-size: 18px; line-height: 1.4; margin-bottom: 8px; font-weight: 600; }
+.lede { font-size: 18px; color: var(--muted); max-width: 640px; margin: 0 auto 24px; }
+
+/* Buttons & Links */
+.cta { display: flex; gap: 12px; justify-content: center; }
+.button {
+  display: inline-block;
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--card-ring);
+  text-decoration: none;
+  font-weight: 500;
+  color: var(--fg);
+  transition: transform 0.2s ease;
+}
+.button:hover { transform: translateY(-2px); }
+.button.primary {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(90deg, var(--accent-start), var(--accent-end), var(--accent-start));
+  background-size: 200% auto;
+  animation: shimmer 5s ease infinite;
+}
+.note { color: var(--muted); font-size: 16px; margin-top: 16px; }
+
+/* Content Sections */
+.points { margin: 0; padding-left: 18px; color: var(--muted); display: inline-block; text-align: left; }
+.quote { margin-top: 24px; color: var(--muted); font-style: italic; }
+
+/* --- THE FIX: CARD LAYOUT REFINEMENT --- */
+/* 1. New container to give the cards breathing room */
+.card-wrap {
+  max-width: 95%; /* Tighter container for this section specifically */
+  margin: 0 auto;
+}
+/* 2. Slightly reduced gap between cards */
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: left; }
+/* 3. Reduced padding inside the cards */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-ring);
+  border-radius: 16px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+/* --- END OF FIX --- */
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  padding-bottom: 200%;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsla(28, 100%, 50%, 0.15) 0%, hsla(28, 100%, 50%, 0) 60%);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.5s ease;
+  z-index: 0;
+}
+.card:hover {
+  transform: translateY(-4px);
+  border-color: hsla(28, 100%, 50%, 0.3);
+}
+.card:hover::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+.card > * { position: relative; z-index: 1; }
+.card p { line-height: 1.2; }
+.cite-text { max-width: 640px; margin-left: auto; margin-right: auto; }
+
+/* Scroll Animation Classes */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Tidy Share Buttons */
+.share-buttons { display: flex; justify-content: center; gap: 16px; margin-top: 24px; }
+.share-button {
+    display: flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px;
+    background: transparent;
+    border: 1px solid var(--card-ring); border-radius: 50%;
+    color: var(--muted); cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+.share-button:hover {
+    color: var(--fg);
+    border-color: var(--accent-start);
+    transform: translateY(-2px);
+}
+.share-button .hidden { display: none; }
+
+/* Footer */
+.foot { padding: 48px 0; text-align: center; color: var(--muted); border-top: 1px solid var(--card-ring); }
+.donations { font-size: 14px; margin-top: 16px; }
+.donations a { color: var(--accent-start); text-decoration: none; }
+.donations a:hover { text-decoration: underline; }
+
+/* Responsive Mobile Layout */
+@media (max-width: 680px) {
+  .cards { grid-template-columns: 1fr; }
+  h1 { font-size: 32px; }
+}
