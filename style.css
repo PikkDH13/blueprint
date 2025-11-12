@@ -107,7 +107,7 @@ h3 { font-size: 18px; line-height: 1.4; margin-bottom: 8px; font-weight: 600; }
   max-width: 95%; /* Tighter container for this section specifically */
   margin: 0 auto;
 }
-/* 2. Slightly reduced gap between cards */
+/* 2. Slightly reduced gap between cards *
 .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: left; }
 /* 3. Reduced padding inside the cards */
 .card {

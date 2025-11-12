@@ -28,7 +28,7 @@ if (legalElement) {
 }
 
 
-// --- SHARE BUTTONS LOGIC ---
+// --- SHARE BUTTONS LOGIC --
 const copyLinkButton = document.getElementById('copy-link-btn');
 const copyIcon = document.getElementById('copy-icon');
 const checkIcon = document.getElementById('check-icon');
