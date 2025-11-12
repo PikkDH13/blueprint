@@ -24,7 +24,7 @@ themeButton?.addEventListener('click', () => {
 const legalElement = document.getElementById('legal');
 if (legalElement) {
   const currentYear = new Date().getFullYear();
-  legalElement.textContent = `© ${currentYear} Dream Hive. Released CC BY 4.0. No cookies. No trackers.`;
+  legalElement.textContent = `Released under CC BY 4.0. No cookies. No trackers.`;
 }
 
 
