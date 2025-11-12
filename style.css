@@ -1,7 +1,7 @@
 /* Light & Dark Theme Variables */
 :root {
-  --accent-start: #3b7ffd;
-  --accent-end: #00c3ff;
+  --accent-start: #00b6fe;
+  --accent-end: #b9efff;
 }
 
 [data-theme="light"] {
@@ -45,7 +45,7 @@ body {
 .center { text-align: center; }
 
 /* Header & Navigation */
-.nav { display: flex; align-items: center; justify-content: space-between; padding-top: 44px; padding-bottom: 1px; }
+.nav { display: flex; align-items: center; justify-content: space-between; padding-top: 44px; padding-bottom: 60px; }
 .brand {
   font-weight: 700;
   text-decoration: none;
