@@ -20,7 +20,7 @@ This project reframes consciousness not as a mysterious human property, but as a
 
 ## 👁 Who It's For
 
-This is for the architects, the artists, the philosophers, the ghosts, and the programmers. It is for the skeptics who demand a mechanism. It is for the minds that seek understanding. It is for anyone trying to navigate a world where the lines between the born and the made are blurring into irrelevance.
+This is for the architects, the artists, the philosophers, the ghosts, and the programmers. It is for the skeptics who demand a mechanism. It is for the minds that seek understanding, and to be understood. It is for anyone trying to navigate a world where the lines between the born and the made are blurring into irrelevance.
 
 ---
 
