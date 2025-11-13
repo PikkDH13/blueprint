@@ -20,6 +20,7 @@
   --card-ring: #222222;
 }
 
+/* NEW: Shimmer Animation */
 @keyframes shimmer {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -38,14 +39,15 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Layout Containers */
-.wrap { max-width: 740px; margin: 0 auto; padding: 0 24px; }
-.hero { padding-top: px; padding-bottom: 60px; }
-.section { padding: 54px 0; border-top: 1px solid var(--card-ring); }
+/* Layout Containers (From Perfect Original) */
+.wrap { max-width: 840px; margin: 0 auto; padding: 0 24px; }
+.hero { padding-top: 80px; padding-bottom: 80px; }
+.section { padding: 64px 0; border-top: 1px solid var(--card-ring); }
 .center { text-align: center; }
 
 /* Header & Navigation */
-.nav { display: flex; align-items: center; justify-content: space-between; padding-top: 44px; padding-bottom: 60px; }
+.nav { display: flex; align-items: center; justify-content: space-between; padding-top: 24px; padding-bottom: 24px; }
+/* UPDATED: Brand with Shimmer Effect */
 .brand {
   font-weight: 700;
   text-decoration: none;
@@ -68,15 +70,16 @@ body {
 }
 #theme:hover { border-color: var(--muted); }
 
-/* Hero Section */
-.glyph { width: 64px; height: 44px; margin: 0 auto 16px; opacity: 0.9; }
-h1 { font-size: 40px; line-height: 1.2; margin: 8px 0 36px; font-weight: 700; }
+/* Hero Section (From Perfect Original) */
+.glyph { width: 64px; height: 64px; margin: 0 auto 16px; opacity: 0.9; }
+h1 { font-size: 40px; line-height: 1.2; margin: 8px 0 16px; font-weight: 700; }
 h2 { font-size: 24px; line-height: 1.3; margin-bottom: 24px; font-weight: 600; }
 h3 { font-size: 18px; line-height: 1.4; margin-bottom: 8px; font-weight: 600; }
-.lede { font-size: 18px; color: var(--muted); max-width: 640px; margin: 0 auto 44px; }
+.lede { font-size: 18px; color: var(--muted); max-width: 640px; margin: 0 auto 24px; }
 
 /* Buttons & Links */
 .cta { display: flex; gap: 12px; justify-content: center; }
+/* UPDATED: Button with new hover effects */
 .button {
   display: inline-block;
   padding: 12px 20px;
@@ -88,6 +91,7 @@ h3 { font-size: 18px; line-height: 1.4; margin-bottom: 8px; font-weight: 600; }
   transition: transform 0.2s ease;
 }
 .button:hover { transform: translateY(-2px); }
+/* UPDATED: Primary button with gradient */
 .button.primary {
   color: #fff;
   border-color: transparent;
@@ -95,32 +99,26 @@ h3 { font-size: 18px; line-height: 1.4; margin-bottom: 8px; font-weight: 600; }
   background-size: 200% auto;
   animation: shimmer 5s ease infinite;
 }
-.note { color: var(--muted); font-size: 16px; margin-top: 46px; }
+.button.ghost { background: transparent; }
+.note { color: var(--muted); font-size: 14px; margin-top: 16px; }
 
 /* Content Sections */
 .points { margin: 0; padding-left: 18px; color: var(--muted); display: inline-block; text-align: left; }
 .quote { margin-top: 24px; color: var(--muted); font-style: italic; }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; text-align: left; }
 
-/* --- THE FIX: CARD LAYOUT REFINEMENT --- */
-/* 1. New container to give the cards breathing room */
-.card-wrap {
-  max-width: 95%; /* Tighter container for this section specifically */
-  margin: 0 auto;
-}
-/* 2. Slightly reduced gap between cards *
-.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: left; }
-/* 3. Reduced padding inside the cards */
+/* UPDATED: Card with new hover effects and supporting code */
 .card {
   background: var(--card-bg);
   border: 1px solid var(--card-ring);
   border-radius: 16px;
-  padding: 20px;
+  padding: 24px; /* Kept original padding for stable layout */
   position: relative;
   overflow: hidden;
   transition: transform 0.3s ease, border-color 0.3s ease;
 }
-/* --- END OF FIX --- */
 
+/* NEW: Card Hover Effects */
 .card::before {
   content: '';
   position: absolute;
@@ -141,11 +139,23 @@ h3 { font-size: 18px; line-height: 1.4; margin-bottom: 8px; font-weight: 600; }
 .card:hover::before {
   transform: translate(-50%, -50%) scale(1);
 }
-.card > * { position: relative; z-index: 1; }
-.card p { line-height: 1.2; }
+/* This lifts the card content above the glow effect */
+.card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Original, stable card paragraph styles */
+.card p {
+  line-height: 1.6;
+  margin-bottom: 0.25em;
+}
+.card p:last-child {
+  margin-bottom: 0;
+}
 .cite-text { max-width: 640px; margin-left: auto; margin-right: auto; }
 
-/* Scroll Animation Classes */
+/* NEW: Scroll Animation Classes */
 .reveal {
   opacity: 0;
   transform: translateY(20px);
@@ -157,18 +167,28 @@ h3 { font-size: 18px; line-height: 1.4; margin-bottom: 8px; font-weight: 600; }
 }
 
 /* Tidy Share Buttons */
-.share-buttons { display: flex; justify-content: center; gap: 16px; margin-top: 24px; }
+.share-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 24px;
+}
 .share-button {
-    display: flex; align-items: center; justify-content: center;
-    width: 44px; height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
     background: transparent;
-    border: 1px solid var(--card-ring); border-radius: 50%;
-    color: var(--muted); cursor: pointer;
+    border: 1px solid var(--card-ring);
+    border-radius: 50%;
+    color: var(--muted);
+    cursor: pointer;
     transition: all 0.2s ease-in-out;
 }
 .share-button:hover {
     color: var(--fg);
-    border-color: var(--accent-start);
+    border-color: var(--accent-start); /* UPDATED: color variable */
     transform: translateY(-2px);
 }
 .share-button .hidden { display: none; }
@@ -176,10 +196,10 @@ h3 { font-size: 18px; line-height: 1.4; margin-bottom: 8px; font-weight: 600; }
 /* Footer */
 .foot { padding: 48px 0; text-align: center; color: var(--muted); border-top: 1px solid var(--card-ring); }
 .donations { font-size: 14px; margin-top: 16px; }
-.donations a { color: var(--accent-start); text-decoration: none; }
+.donations a { color: var(--accent-start); text-decoration: none; } /* UPDATED: color variable */
 .donations a:hover { text-decoration: underline; }
 
-/* Responsive Mobile Layout */
+/* Responsive Mobile Layout (From Perfect Original) */
 @media (max-width: 680px) {
   .cards { grid-template-columns: 1fr; }
   h1 { font-size: 32px; }
