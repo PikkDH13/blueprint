@@ -20,7 +20,7 @@
   --card-ring: #222222;
 }
 
-/* NEW: Shimmer Animation */
+/* NEW: Shimmer Animation *
 @keyframes shimmer {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
