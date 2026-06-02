@@ -1,0 +1,2628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Systems Explorer</title>
+
+  <!-- Load standard Three.js from CDN for local/standalone file compatibility -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #0d1117; 
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --text-main: #e2e8f0;
+      --text-dim: #94a3b8;
+      --blueprint-blue: #00a3ff;
+      --resonance-purple: #a855f7;
+      --border: rgba(255, 255, 255, 0.1);
+      --grid-line: rgba(0, 163, 255, 0.04);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-x: hidden;
+      /* Signature Blueprint Grid Background Overlay */
+      background-image: 
+          linear-gradient(var(--grid-line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    /* WebGL Background Canvas */
+    #starfield {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -3;
+      pointer-events: none;
+    }
+
+    /* Central Vignette Star Blur */
+    .starfield-blur-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -2;
+      pointer-events: none;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      /* Radial mask: Blur in the center, sharp at the boundaries */
+      mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 75%);
+      -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 75%);
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      color: var(--blueprint-blue);
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      color: var(--text-dim);
+      max-width: 950px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    /* Glowing Blue Blueprint Pill */
+    .blueprint-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(0, 163, 255, 0.15);
+      color: var(--blueprint-blue);
+      border: 1px solid rgba(0, 163, 255, 0.4);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.85em;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(0, 163, 255, 0.1);
+      margin: 0 2px;
+    }
+
+    .blueprint-pill:hover {
+      background: var(--blueprint-blue);
+      color: #050505;
+      border-color: var(--blueprint-blue);
+      box-shadow: 0 0 12px rgba(0, 163, 255, 0.4);
+    }
+
+    /* Custom Dark warning modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .modal-content {
+      background: #09090b;
+      border: 1px solid rgba(0, 163, 255, 0.4);
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 450px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 10px 45px rgba(0, 163, 255, 0.12);
+      animation: modal-enter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes modal-enter {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-icon {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      color: var(--blueprint-blue);
+      font-size: 1.4rem;
+      margin-bottom: 12px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .modal-text {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .modal-btn {
+      background: var(--blueprint-blue);
+      color: #050505;
+      font-weight: bold;
+      font-size: 0.9rem;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+
+    .modal-btn:hover {
+      background: #ffd0a8;
+      box-shadow: 0 0 12px rgba(0, 163, 255, 0.3);
+    }
+
+    /* Gamified Progress Header */
+    .profile-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 24px;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      backdrop-filter: blur(10px);
+    }
+
+    .profile-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .level-badge {
+      background: var(--resonance-purple);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.9rem;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+    }
+
+    .xp-display {
+      color: var(--text-main);
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .xp-display span {
+      color: var(--blueprint-blue);
+    }
+
+    .progress-container {
+      flex-grow: 1;
+      max-width: 350px;
+      background: #11151d;
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid var(--border);
+    }
+
+    .progress-bar {
+      background: linear-gradient(90deg, var(--blueprint-blue), var(--resonance-purple));
+      height: 100%;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    .profile-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .action-link {
+      background: transparent;
+      color: var(--blueprint-blue);
+      border: 1px solid rgba(0, 163, 255, 0.25);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s ease;
+    }
+
+    .action-link:hover {
+      background: rgba(0, 163, 255, 0.08);
+      border-color: var(--blueprint-blue);
+    }
+
+    .reset-btn {
+      background: transparent;
+      color: #ff6b6b;
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s ease;
+    }
+
+    .reset-btn:hover {
+      background: rgba(255, 107, 107, 0.1);
+      border-color: #ff6b6b;
+    }
+
+    /* Search and View Switcher */
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .view-switcher {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-container {
+      position: relative;
+      width: 300px;
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(15, 15, 15, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      color: #fff;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--blueprint-blue);
+      box-shadow: 0 0 10px rgba(0, 163, 255, 0.2);
+    }
+
+    .btn {
+      background: rgba(17, 17, 17, 0.85);
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Blue buttons hover safely */
+    .btn:not(.active):hover {
+      background: rgba(0, 163, 255, 0.1);
+      color: #fff;
+      border-color: rgba(0, 163, 255, 0.4);
+    }
+
+    .btn.active {
+      background: var(--blueprint-blue);
+      color: #050505;
+      border-color: var(--blueprint-blue);
+      font-weight: 600;
+      box-shadow: 0 0 15px rgba(0, 163, 255, 0.3);
+    }
+
+    /* Resource Vault Tab Color & Hover Isolation (Prevents flickers on active states) */
+    #btn-vault.active {
+      background: var(--resonance-purple) !important;
+      color: #fff !important;
+      border-color: var(--resonance-purple) !important;
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.3) !important;
+    }
+
+    #btn-vault:not(.active):hover {
+      background: rgba(168, 85, 247, 0.1) !important;
+      color: #fff !important;
+      border-color: rgba(168, 85, 247, 0.4) !important;
+    }
+
+    /* Two-column layout */
+    .workspace {
+      display: grid;
+      grid-template-columns: 1.15fr 1.25fr;
+      gap: 30px;
+      flex-grow: 1;
+      align-items: start;
+    }
+
+    @media (max-width: 1000px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Panels */
+    .panel {
+      background: rgba(13, 17, 23, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+    }
+
+    .panel-header {
+      padding: 16px 20px;
+      background: rgba(0, 163, 255, 0.04);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-header h2 {
+      color: var(--blueprint-blue);
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+
+    .panel-content {
+      padding: 20px;
+    }
+
+    /* Tree View Styles */
+    .tree {
+      list-style: none;
+    }
+
+    .tree li {
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+
+    .folder {
+      color: var(--blueprint-blue);
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-block;
+      user-select: none;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+
+    .folder:hover {
+      background: rgba(0, 163, 255, 0.1);
+      color: #93c5fd;
+    }
+
+    .folder::before {
+      content: "▶ ";
+      display: inline-block;
+      font-size: 0.8rem;
+      margin-right: 4px;
+      transition: transform 0.2s ease;
+    }
+
+    .folder.open::before {
+      transform: rotate(90deg);
+    }
+
+    .nested {
+      margin-left: 18px;
+      margin-top: 6px;
+      padding-left: 14px;
+      border-left: 1px solid var(--border);
+      list-style: none;
+      display: none;
+    }
+
+    .nested.show {
+      display: block;
+    }
+
+    .item {
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .item:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .item.active {
+      color: var(--resonance-purple);
+      background: rgba(168, 85, 247, 0.1);
+      font-weight: 500;
+    }
+
+    .item.locked {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .item-status {
+      font-size: 0.8rem;
+      color: #555;
+    }
+
+    .item-status.read {
+      color: var(--blueprint-blue);
+    }
+
+    .item-status.mastered {
+      color: var(--resonance-purple);
+    }
+
+    /* Course Path View Styles (Gamified Locking) */
+    .course-stage {
+      margin-bottom: 24px;
+      background: rgba(17, 17, 17, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      transition: border-color 0.3s ease;
+    }
+
+    .course-stage.locked {
+      border-color: rgba(244, 67, 54, 0.15);
+      opacity: 0.5;
+    }
+
+    .course-stage.ready-to-unlock {
+      border-color: #4caf50;
+      box-shadow: 0 0 10px rgba(76, 175, 80, 0.1);
+    }
+
+    .course-stage-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .stage-unlock-action {
+      background: #4caf50;
+      color: #050505;
+      font-weight: 700;
+      font-size: 0.8rem;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      animation: pulse-green 2s infinite;
+    }
+
+    .stage-unlock-action:hover {
+      background: #66bb6a;
+    }
+
+    .stage-locked-tag {
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #f44336;
+    }
+
+    /* Focused Stage Header colors (Resonance Purple) */
+    .course-stage h3 {
+      color: var(--resonance-purple);
+      font-size: 1.1rem;
+    }
+
+    .course-stage-desc {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+
+    .course-step-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Core Mechanisms View Styles */
+    .mechanisms-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .mechanisms-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .mechanism-card {
+      background: rgba(17, 17, 17, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .mechanism-card:hover {
+      border-color: rgba(0, 163, 255, 0.4);
+      background: rgba(0, 163, 255, 0.02);
+    }
+
+    .mechanism-card h3 {
+      color: var(--blueprint-blue);
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+    }
+
+    .mechanism-card p {
+      color: var(--text-dim);
+      font-size: 0.8rem;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+
+    .mechanism-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .mech-badge {
+      font-size: 0.75rem;
+      background: #222;
+      color: #ccc;
+      padding: 2px 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .mech-badge:hover {
+      background: var(--blueprint-blue);
+      color: #050505;
+    }
+
+    /* Inspector Panel Styles */
+    .inspector {
+      position: sticky;
+      top: 40px;
+      background: rgba(13, 17, 23, 0.85);
+      border: 1px solid rgba(0, 163, 255, 0.3);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      min-height: 600px;
+      backdrop-filter: blur(10px);
+    }
+
+    .inspector-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 450px;
+      color: #666;
+      text-align: center;
+    }
+
+    .inspector-placeholder svg {
+      stroke: #333;
+      margin-bottom: 16px;
+    }
+
+    .inspector-content h3 {
+      font-size: 2rem;
+      color: var(--resonance-purple);
+      margin-bottom: 6px;
+    }
+
+    .inspector-meta {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .inspector-section {
+      margin-bottom: 20px;
+    }
+
+    .inspector-section h4 {
+      color: var(--blueprint-blue);
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .systems-box {
+      background: rgba(0, 163, 255, 0.03);
+      border-left: 3px solid var(--blueprint-blue);
+      padding: 16px;
+      border-radius: 0 8px 8px 0;
+      margin-top: 10px;
+    }
+
+    /* Connection Network Pills */
+    .connection-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .pill {
+      background: rgba(168, 85, 247, 0.15);
+      color: #d8b4fe;
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .pill:hover {
+      background: var(--resonance-purple);
+      color: #050505;
+      border-color: var(--resonance-purple);
+    }
+
+    .mech-pill {
+      background: #1a1a1a;
+      color: #bbb;
+      border: 1px solid #333;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+
+    /* Quiz Panel Styles */
+    .quiz-box {
+      background: #0f0f0f;
+      border: 1px dashed rgba(168, 85, 247, 0.4);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 24px;
+    }
+
+    .quiz-box h4 {
+      color: var(--resonance-purple);
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .quiz-question {
+      font-size: 1rem;
+      color: #fff;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .quiz-option {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: #ccc;
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-align: left;
+      transition: all 0.2s ease;
+    }
+
+    .quiz-option:hover {
+      background: rgba(168, 85, 247, 0.05);
+      border-color: rgba(168, 85, 247, 0.3);
+      color: #fff;
+    }
+
+    /* Correct Quiz Selection is highlighted in Purple */
+    .quiz-option.correct {
+      background: rgba(168, 85, 247, 0.15);
+      border-color: var(--resonance-purple);
+      color: #d8b4fe;
+      font-weight: 600;
+    }
+
+    .quiz-option.incorrect {
+      background: rgba(244, 67, 54, 0.15);
+      border-color: #f44336;
+      color: #f44336;
+    }
+
+    .quiz-feedback {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      padding: 12px;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .quiz-feedback.correct {
+      background: rgba(168, 85, 247, 0.08);
+      border-left: 3px solid var(--resonance-purple);
+      color: #d3d3d3;
+      display: block;
+    }
+
+    .quiz-feedback.incorrect {
+      background: rgba(244, 67, 54, 0.08);
+      border-left: 3px solid #f44336;
+      color: #d3d3d3;
+      display: block;
+    }
+
+    /* Vault / Store styles */
+    .vault-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .vault-card {
+      background: rgba(17, 17, 17, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .vault-card h3 {
+      color: var(--blueprint-blue);
+      font-size: 1.2rem;
+    }
+
+    .vault-card-author {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: -6px;
+    }
+
+    .vault-card-desc {
+      font-size: 0.9rem;
+      color: #ccc;
+      line-height: 1.5;
+    }
+
+    .vault-action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .vault-price {
+      font-weight: bold;
+      color: var(--resonance-purple);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .vault-btn-container {
+      display: flex;
+      gap: 10px;
+    }
+
+    .vault-buy-btn {
+      background: var(--resonance-purple);
+      color: #fff;
+      font-weight: bold;
+      font-size: 0.85rem;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+    }
+
+    .vault-buy-btn:hover {
+      background: #c084fc;
+    }
+
+    .vault-read-btn {
+      background: transparent;
+      color: #4caf50;
+      border: 1px solid #4caf50;
+      font-weight: bold;
+      font-size: 0.85rem;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .vault-read-btn:hover {
+      background: rgba(76, 175, 80, 0.08);
+    }
+
+    .vault-affiliate-btn {
+      background: transparent;
+      color: var(--blueprint-blue);
+      border: 1px solid rgba(0, 163, 255, 0.4);
+      font-weight: bold;
+      font-size: 0.85rem;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .vault-affiliate-btn:hover {
+      background: rgba(0, 163, 255, 0.08);
+      border-color: var(--blueprint-blue);
+    }
+
+    /* Modal / Reading View in Inspector */
+    .vault-read-panel {
+      color: #d3d3d3;
+    }
+
+    .vault-read-panel h3 {
+      font-size: 1.8rem;
+      color: var(--blueprint-blue);
+      margin-bottom: 4px;
+    }
+
+    .vault-read-panel h4 {
+      color: var(--resonance-purple);
+      margin-top: 18px;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 4px;
+    }
+
+    .vault-read-panel p {
+      line-height: 1.6;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+
+    .vault-read-panel ul {
+      margin-left: 20px;
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .footer {
+      margin-top: 40px;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(0, 163, 255, 0.02);
+      line-height: 1.6;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    .highlight {
+      color: var(--blueprint-blue);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- WebGL Moving Stars Canvas -->
+  <canvas id="starfield"></canvas>
+  <!-- Radial Vignette Star Blur Overlay -->
+  <div class="starfield-blur-overlay"></div>
+
+  <!-- Custom Dark & Orange Locked Modal -->
+  <div id="custom-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-icon">🔒</div>
+      <h3 class="modal-title">Concept Locked!</h3>
+      <p class="modal-text" id="modal-message">You must unlock the stage before viewing this concept.</p>
+      <button class="modal-btn" onclick="closeCustomModal()">Close</button>
+    </div>
+  </div>
+
+  <header>
+    <h1>Systems Explorer</h1>
+    <p class="subtitle">
+      A complete, gamified cybernetics academia. Master the core principles of feedback control, information theory, and self-organizing systems by earning Cognitive Coins (🪙) alongside XP to unlock deep research summaries inside the Resource Vault.
+    </p>
+  </header>
+
+  <!-- Gamified Level & State Management Bar -->
+  <div class="profile-bar">
+    <div class="profile-info">
+      <div class="level-badge" id="level-badge">Level 1: Novice Observer</div>
+      <div class="xp-display">XP: <span id="xp-text">0</span> / <span id="xp-needed">300</span></div>
+      <div class="xp-display">Coins: <span id="coins-text" style="color: var(--resonance-purple); font-weight: bold;">0</span> 🪙</div>
+    </div>
+    <div class="progress-container">
+      <div class="progress-bar" id="xp-progress"></div>
+    </div>
+    <div class="profile-actions">
+      <button class="action-link" onclick="exportProgress()">Export Progress</button>
+      <button class="action-link" onclick="triggerImport()">Import Progress</button>
+      <input type="file" id="import-file" class="hidden-input" accept=".json" onchange="importProgress(event)" />
+      <button class="reset-btn" onclick="resetProgress()">Reset</button>
+    </div>
+  </div>
+
+  <div class="controls-row">
+    <div class="view-switcher">
+      <button class="btn active" id="btn-course" onclick="switchView('course')">🎓 Structured Course Path</button>
+      <button class="btn" id="btn-tree" onclick="switchView('tree')">🌲 Taxonomy Tree View</button>
+      <button class="btn" id="btn-mechanisms" onclick="switchView('mechanisms')">⚙️ Core Mechanisms View</button>
+      <button class="btn" id="btn-vault" onclick="switchView('vault')">🔓 The Resource Vault</button>
+    </div>
+    <div class="search-container">
+      <input type="text" id="search-bar" class="search-input" placeholder="Search concept or theorist..." oninput="handleSearch()" />
+    </div>
+  </div>
+
+  <div class="workspace">
+    
+    <!-- Left Column: Navigation Maps -->
+    <div class="column" id="left-column">
+      
+      <!-- Structured Course Path -->
+      <div id="view-content-course">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>🎓 Step-by-Step Learning Progression</h2>
+          </div>
+          <div class="panel-content" id="course-path-container">
+            <!-- Rendered Dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Taxonomy Tree View Content -->
+      <div id="view-content-tree" style="display: none;">
+        <!-- Core Systems Section -->
+        <div class="panel" style="margin-bottom: 24px;">
+          <div class="panel-header">
+            <h2>🧠 Information Theory & Feedback</h2>
+          </div>
+          <div class="panel-content">
+            <ul class="tree" id="tree-section-core">
+              <li>
+                <span class="folder" onclick="toggleFolder(this)">Information Theory</span>
+                <ul class="nested">
+                  <li class="item" id="tree-entropy" onclick="inspect('entropy')">Shannon Entropy <span class="item-status" id="status-tree-entropy">○</span></li>
+                  <li class="item" id="tree-signal_noise" onclick="inspect('signal_noise')">Signal-to-Noise Ratio <span class="item-status" id="status-tree-signal_noise">○</span></li>
+                  <li class="item" id="tree-state_space" onclick="inspect('state_space')">State Space Mapping <span class="item-status" id="status-tree-state_space">○</span></li>
+                  <li class="item" id="tree-claude_shannon" onclick="inspect('claude_shannon')">Claude Shannon <span class="item-status" id="status-tree-claude_shannon">○</span></li>
+                </ul>
+              </li>
+              <li>
+                <span class="folder" onclick="toggleFolder(this)">Feedback & Control</span>
+                <ul class="nested">
+                  <li class="item" id="tree-negative_feedback" onclick="inspect('negative_feedback')">Negative Feedback Loops <span class="item-status" id="status-tree-negative_feedback">○</span></li>
+                  <li class="item" id="tree-positive_feedback" onclick="inspect('positive_feedback')">Positive Feedback Loops <span class="item-status" id="status-tree-positive_feedback">○</span></li>
+                  <li class="item" id="tree-feedback_delay" onclick="inspect('feedback_delay')">Feedback Lag/Delay <span class="item-status" id="status-tree-feedback_delay">○</span></li>
+                  <li class="item" id="tree-feedback_oscillation" onclick="inspect('feedback_oscillation')">Feedback Oscillation <span class="item-status" id="status-tree-feedback_oscillation">○</span></li>
+                  <li class="item" id="tree-norbert_wiener" onclick="inspect('norbert_wiener')">Norbert Wiener <span class="item-status" id="status-tree-norbert_wiener">○</span></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Complexity, Ashby, and Systems Section -->
+        <div class="panel" style="margin-bottom: 24px;">
+          <div class="panel-header">
+            <h2>⚙️ Complexity, Scaffolding & General Systems</h2>
+          </div>
+          <div class="panel-content">
+            <ul class="tree" id="tree-section-behavior">
+              <li>
+                <span class="folder" onclick="toggleFolder(this)">Ashby's Cybernetics</span>
+                <ul class="nested">
+                  <li class="item" id="tree-requisite_variety" onclick="inspect('requisite_variety')">Law of Requisite Variety <span class="item-status" id="status-tree-requisite_variety">○</span></li>
+                  <li class="item" id="tree-attenuation_amplification" onclick="inspect('attenuation_amplification')">Complexity Management <span class="item-status" id="status-tree-attenuation_amplification">○</span></li>
+                  <li class="item" id="tree-open_closed_systems" onclick="inspect('open_closed_systems')">Open vs. Closed Systems <span class="item-status" id="status-tree-open_closed_systems">○</span></li>
+                  <li class="item" id="tree-ludwig_von_bertalanffy" onclick="inspect('ludwig_von_bertalanffy')">Ludwig von Bertalanffy <span class="item-status" id="status-tree-ludwig_von_bertalanffy">○</span></li>
+                  <li class="item" id="tree-w_ross_ashby" onclick="inspect('w_ross_ashby')">W. Ross Ashby <span class="item-status" id="status-tree-w_ross_ashby">○</span></li>
+                </ul>
+              </li>
+              <li>
+                <span class="folder" onclick="toggleFolder(this)">Non-linear Complexity</span>
+                <ul class="nested">
+                  <li class="item" id="tree-emergence" onclick="inspect('emergence')">Systemic Emergence <span class="item-status" id="status-tree-emergence">○</span></li>
+                  <li class="item" id="tree-chaos_theory" onclick="inspect('chaos_theory')">Chaos & Predictability <span class="item-status" id="status-tree-chaos_theory">○</span></li>
+                  <li class="item" id="tree-bifurcation" onclick="inspect('bifurcation')">Bifurcation Points <span class="item-status" id="status-tree-bifurcation">○</span></li>
+                  <li class="item" id="tree-system_attractors" onclick="inspect('system_attractors')">System Attractors <span class="item-status" id="status-tree-system_attractors">○</span></li>
+                  <li class="item" id="tree-phase_transitions" onclick="inspect('phase_transitions')">Phase Transitions <span class="item-status" id="status-tree-phase_transitions">○</span></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Autopoiesis & Living Boundaries Section -->
+        <div class="panel">
+          <div class="panel-header">
+            <h2>🜂 Self-Preservation & Living Boundaries</h2>
+          </div>
+          <div class="panel-content">
+            <ul class="tree" id="tree-section-philosophy">
+              <li>
+                <span class="folder" onclick="toggleFolder(this)">Autopoiesis</span>
+                <ul class="nested">
+                  <li class="item" id="tree-autopoiesis" onclick="inspect('autopoiesis')">Autopoietic Loops <span class="item-status" id="status-tree-autopoiesis">○</span></li>
+                  <li class="item" id="tree-markov_blanket" onclick="inspect('markov_blanket')">Markov Blankets <span class="item-status" id="status-tree-markov_blanket">○</span></li>
+                  <li class="item" id="tree-allostasis" onclick="inspect('allostasis')">Allostatic Control <span class="item-status" id="status-tree-allostasis">○</span></li>
+                  <li class="item" id="tree-homeostasis" onclick="inspect('homeostasis')">Homeostatic Balance <span class="item-status" id="status-tree-homeostasis">○</span></li>
+                  <li class="item" id="tree-feedback_loop_hierarchy" onclick="inspect('feedback_loop_hierarchy')">Loop Hierarchies <span class="item-status" id="status-tree-feedback_loop_hierarchy">○</span></li>
+                  <li class="item" id="tree-humberto_maturana" onclick="inspect('humberto_maturana')">Humberto Maturana <span class="item-status" id="status-tree-humberto_maturana">○</span></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Core Mechanisms View Content -->
+      <div id="view-content-mechanisms" style="display: none;">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>⚙️ Core Life-Mechanisms</h2>
+          </div>
+          <div class="panel-content">
+            <div class="mechanisms-grid" id="mechanisms-grid">
+              <!-- Rendered Dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resource Vault View Content -->
+      <div id="view-content-vault" style="display: none;">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>🔓 The Resource Vault</h2>
+          </div>
+          <div class="panel-content">
+            <div class="vault-grid" id="vault-grid">
+              <!-- Rendered Dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Inspector Panel -->
+    <div class="column">
+      <div class="inspector" id="inspector">
+        <div class="inspector-placeholder" id="placeholder">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <p>Select any view on the left and click on an unlocked concept to examine its functional properties, attempt its quiz, and gain resources.</p>
+        </div>
+        
+        <!-- Standard concept profile content -->
+        <div class="inspector-content" id="inspector-content" style="display: none;">
+          <h3 id="inspect-title">Concept Name</h3>
+          <div class="inspector-meta">
+            <span id="inspect-category">Category</span>
+            <span id="inspect-mechs"><!-- Dynamic Mechanism Badges --></span>
+          </div>
+          
+          <div class="inspector-section">
+            <h4>Academic Definition</h4>
+            <p id="inspect-def">Standard scientific description goes here.</p>
+          </div>
+
+          <div class="inspector-section">
+            <h4>Empirical Grounding / History</h4>
+            <p id="inspect-empirical">Key studies, researchers, and experimental validation notes.</p>
+          </div>
+
+          <div class="inspector-section">
+            <!-- Header has been updated to have a direct interactive Blue Blueprint Pill next to it [1] -->
+            <h4 style="display: flex; align-items: center; gap: 8px;">
+              <span>Blueprint Connection</span>
+              <a href="https://blueprint-online.com" target="_blank" class="blueprint-pill" style="font-size: 0.75rem;">What is the Blueprint?</a>
+            </h4>
+            <div class="systems-box" id="inspect-systems">
+              How this links to information processing, predictive error, and reinforcement structures.
+            </div>
+          </div>
+
+          <div class="inspector-section">
+            <h4>Cross-Connections (Related Webs)</h4>
+            <div class="connection-pills" id="inspect-connections">
+              <!-- Clickable Pills go here -->
+            </div>
+          </div>
+
+          <!-- Dynamic Driving-Test-Style Quiz Area -->
+          <div class="quiz-box" id="quiz-area">
+            <h4 id="quiz-heading">Knowledge Check (+150 XP / +40 Coins)</h4>
+            <div class="quiz-question" id="quiz-question-text">Question loading...</div>
+            <div class="quiz-options" id="quiz-options-container">
+              <!-- Option buttons dynamically populated -->
+            </div>
+            <div class="quiz-feedback" id="quiz-feedback-box">
+              Feedback loading...
+            </div>
+          </div>
+        </div>
+
+        <!-- Premium book summary reader panel -->
+        <div class="vault-read-panel" id="vault-read-panel" style="display: none;">
+          <button class="btn" style="margin-bottom: 20px; padding: 6px 12px; font-size: 0.8rem;" onclick="closeVaultReader()">← Close Summary</button>
+          <h3 id="vault-book-title">Book Title</h3>
+          <div class="vault-card-author" id="vault-book-author" style="margin-bottom: 20px;">AUTHOR</div>
+          <div id="vault-book-text-content">
+            <!-- Summary texts populated by JS -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span class="highlight">State Serialization:</span> Use the <span class="highlight" onclick="exportProgress()" style="cursor: pointer; text-decoration: underline; color: var(--blueprint-blue);">Export Progress</span> button to download a backup of your current level, unlocked stages, and unlocked research papers. You can re-import this file on any machine at any time to resume your progress. All "Blueprint" nodes link out directly to <a href="https://blueprint-online.com" target="_blank" class="blueprint-pill">🔗 Blueprint</a>.
+  </div>
+
+  <!-- Interactive Data Script -->
+  <script>
+    // Global User Progress State (Isolated Key)
+    let progress = {
+      xp: 0,
+      coins: 0,
+      level: 1,
+      readList: [],
+      masteredList: [],
+      unlockedStages: [0], // Stage 1 (index 0) is free
+      purchasedVaultItems: []
+    };
+
+    // Load progress from LocalStorage on load
+    function loadProgress() {
+      const stored = localStorage.getItem('systems_explorer_user_progress');
+      if (stored) {
+        progress = JSON.parse(stored);
+        
+        // Safety checks for backward compatibility
+        if (!progress.unlockedStages) progress.unlockedStages = [0];
+        if (!progress.coins) progress.coins = 0;
+        if (!progress.purchasedVaultItems) progress.purchasedVaultItems = [];
+        
+        updateUI();
+      }
+    }
+
+    // Save current progress to LocalStorage
+    function saveProgress() {
+      localStorage.setItem('systems_explorer_user_progress', JSON.stringify(progress));
+      updateUI();
+    }
+
+    // Export progress as JSON file (using Blob to support local file downloads perfectly)
+    function exportProgress() {
+      const dataStr = JSON.stringify(progress, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", url);
+      downloadAnchor.setAttribute("download", `systems_explorer_backup_lvl${progress.level}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function triggerImport() {
+      document.getElementById('import-file').click();
+    }
+
+    // Import progress from JSON file
+    function importProgress(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.xp !== undefined && parsed.level !== undefined) {
+            progress = parsed;
+            saveProgress();
+            showCustomModal("Progress state imported successfully!");
+            location.reload();
+          } else {
+            showCustomModal("Invalid backup file format.");
+          }
+        } catch (err) {
+          showCustomModal("Error parsing file.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Dynamic blue glowing "Blueprint" pill formatter
+    function formatBlueprintText(text) {
+      if (!text) return "";
+      return text.replace(/\b(The\s+)?Blueprint\b/gi, '<a href="https://blueprint-online.com" target="_blank" class="blueprint-pill">🔗 Blueprint</a>');
+    }
+
+    // Reverted Level Progression parameters to mirror the Stage unlock requirements exactly
+    function calculateLevel(xp) {
+      if (xp >= 4500) return { lvl: 5, name: "Level 5: Systems Architect", next: "MAX", needed: 4500 };
+      if (xp >= 2500) return { lvl: 4, name: "Level 4: Cognitive Theorist", next: 4500, needed: 2000 };
+      if (xp >= 1000) return { lvl: 3, name: "Level 3: Research Analyst", next: 2500, needed: 1500 };
+      if (xp >= 300) return { lvl: 2, name: "Level 2: Active Inference Novice", next: 1000, needed: 700 };
+      return { lvl: 1, name: "Level 1: Novice Observer", next: 300, needed: 300 };
+    }
+
+    // Refresh Level Progress and Visual Elements
+    function updateUI() {
+      const lvlData = calculateLevel(progress.xp);
+      progress.level = lvlData.lvl;
+
+      document.getElementById('level-badge').innerText = lvlData.name;
+      document.getElementById('xp-text').innerText = progress.xp;
+      document.getElementById('coins-text').innerText = progress.coins;
+
+      if (lvlData.next === "MAX") {
+        document.getElementById('xp-needed').innerText = "MAX";
+        document.getElementById('xp-progress').style.width = "100%";
+      } else {
+        document.getElementById('xp-needed').innerText = lvlData.next;
+        const baseXP = lvlData.next - lvlData.needed;
+        const currentProgressXP = progress.xp - baseXP;
+        const percent = Math.min(100, Math.max(0, (currentProgressXP / lvlData.needed) * 100));
+        document.getElementById('xp-progress').style.width = percent + "%";
+      }
+
+      // Update Node Checkmarks in Tree Views and apply locking styles
+      document.querySelectorAll('.item').forEach(el => {
+        const idAttr = el.id;
+        if (idAttr) {
+          const key = idAttr.replace('tree-', '').replace('course-', '');
+          const statusSpan = document.getElementById('status-' + idAttr);
+          
+          // Find the stage this node belongs to
+          const stageIdx = getStageIndexForNode(key);
+          const isLocked = !progress.unlockedStages.includes(stageIdx);
+
+          if (isLocked) {
+            el.classList.add('locked');
+          } else {
+            el.classList.remove('locked');
+          }
+
+          if (statusSpan) {
+            if (isLocked) {
+              statusSpan.innerText = "🔒";
+              statusSpan.className = "item-status";
+            } else if (progress.masteredList.includes(key)) {
+              statusSpan.innerText = "● [Mastered]";
+              statusSpan.className = "item-status mastered";
+            } else if (progress.readList.includes(key)) {
+              statusSpan.innerText = "◐ [Read]";
+              statusSpan.className = "item-status read";
+            } else {
+              statusSpan.innerText = "○";
+              statusSpan.className = "item-status";
+            }
+          }
+        }
+      });
+
+      renderCoursePath();
+      renderVaultGrid();
+    }
+
+    // Find which stage index a given node belongs to
+    function getStageIndexForNode(nodeKey) {
+      for (let i = 0; i < coursePath.length; i++) {
+        if (coursePath[i].nodes.includes(nodeKey)) {
+          return i;
+        }
+      }
+      return 0;
+    }
+
+    // Toggle collapsible folders in tree view
+    function toggleFolder(element) {
+      element.classList.toggle('open');
+      const nestedList = element.nextElementSibling;
+      if (nestedList) {
+        nestedList.classList.toggle('show');
+      }
+    }
+
+    // Unified, non-reassigned stable View Switcher
+    let activeViewMode = 'course';
+    function switchView(mode) {
+      activeViewMode = mode;
+
+      // Reset button active classes
+      document.querySelectorAll('.btn').forEach(btn => {
+        if (btn.id === 'btn-' + mode) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Toggle views visibility with safety checks
+      const treeView = document.getElementById('view-content-tree');
+      const courseView = document.getElementById('view-content-course');
+      const mechView = document.getElementById('view-content-mechanisms');
+      const vaultView = document.getElementById('view-content-vault');
+
+      if (treeView) treeView.style.display = (mode === 'tree') ? 'block' : 'none';
+      if (courseView) courseView.style.display = (mode === 'course') ? 'block' : 'none';
+      if (mechView) mechView.style.display = (mode === 'mechanisms') ? 'block' : 'none';
+      if (vaultView) vaultView.style.display = (mode === 'vault') ? 'block' : 'none';
+
+      // Render view content based on state
+      if (mode === 'mechanisms') {
+        renderMechanismsView();
+      } else if (mode === 'course') {
+        renderCoursePath();
+      } else if (mode === 'vault') {
+        renderVaultGrid();
+      }
+
+      // Reset Search safely
+      resetSearch();
+    }
+
+    // Reverted Stage Unlock requirements to the original ratios
+    const coursePath = [
+      {
+        title: "Signals & Space (Information Foundations)",
+        desc: "Examine how information is formalized, measured as entropy, and mapped across structural state spaces.",
+        nodes: ["entropy", "signal_noise", "state_space", "claude_shannon"],
+        xpRequired: 0
+      },
+      {
+        title: "Feedback & Control (Regulating the Loops)",
+        desc: "Master the dynamics of positive and negative feedback loops, delayed correction, and the mechanics of oscillation.",
+        nodes: ["negative_feedback", "positive_feedback", "feedback_delay", "feedback_oscillation", "norbert_wiener"],
+        xpRequired: 300
+      },
+      {
+        title: "Complexity & Boundaries (General Systems)",
+        desc: "Study Ashby's Law of Requisite Variety, complexity management, thermodynamic exchange, and general system frameworks.",
+        nodes: ["requisite_variety", "attenuation_amplification", "open_closed_systems", "ludwig_von_bertalanffy", "w_ross_ashby"],
+        xpRequired: 1000
+      },
+      {
+        title: "Emergence & Chaos (Non-linear Dynamics)",
+        desc: "Analyze self-organization, deterministic chaos, phase transitions, and structural bifurcations in complex systems.",
+        nodes: ["emergence", "chaos_theory", "bifurcation", "system_attractors", "phase_transitions"],
+        xpRequired: 2500
+      },
+      {
+        title: "Self-Preservation & Autopoiesis (Living Boundaries)",
+        desc: "Synthesize systems thinking into self-producing living systems, hierarchical control loops, and informational boundaries.",
+        nodes: ["autopoiesis", "markov_blanket", "allostasis", "homeostasis", "feedback_loop_hierarchy", "humberto_maturana"],
+        xpRequired: 4500
+      }
+    ];
+
+    // Handle stage unlocking event
+    function unlockStage(idx) {
+      const stage = coursePath[idx];
+      if (progress.xp >= stage.xpRequired && !progress.unlockedStages.includes(idx)) {
+        progress.unlockedStages.push(idx);
+        saveProgress();
+      }
+    }
+
+    // Render the Step-by-Step Walkthrough List
+    function renderCoursePath() {
+      const container = document.getElementById('course-path-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      coursePath.forEach((stage, sIdx) => {
+        const isUnlocked = progress.unlockedStages.includes(sIdx);
+        const canUnlock = progress.xp >= stage.xpRequired;
+
+        const stageDiv = document.createElement('div');
+        
+        let headerActionHTML = "";
+        if (isUnlocked) {
+          stageDiv.className = 'course-stage';
+        } else if (canUnlock) {
+          stageDiv.className = 'course-stage ready-to-unlock';
+          headerActionHTML = `<button class="stage-unlock-action" onclick="unlockStage(${sIdx})">🔓 Unlock with ${stage.xpRequired} XP</button>`;
+        } else {
+          stageDiv.className = 'course-stage locked';
+          headerActionHTML = `<span class="stage-locked-tag">🔒 Locked (Needs ${stage.xpRequired} XP)</span>`;
+        }
+        
+        let stepsHTML = "";
+        if (isUnlocked) {
+          stepsHTML = stage.nodes.map(nodeKey => {
+            const node = database[nodeKey];
+            if (!node) return '';
+
+            let statusSymbol = "○";
+            let statusClass = "item-status";
+            if (progress.masteredList.includes(nodeKey)) {
+              statusSymbol = "● [Mastered]";
+              statusClass = "item-status mastered";
+            } else if (progress.readList.includes(nodeKey)) {
+              statusSymbol = "◐ [Read]";
+              statusClass = "item-status read";
+            }
+
+            return `
+              <li class="item" id="course-${nodeKey}" onclick="inspect('${nodeKey}')">
+                <span>📖 ${node.title}</span>
+                <span class="${statusClass}" id="status-course-${nodeKey}">${statusSymbol}</span>
+              </li>
+            `;
+          }).join('');
+        } else {
+          stepsHTML = stage.nodes.map(nodeKey => {
+            const node = database[nodeKey];
+            if (!node) return '';
+            return `
+              <li class="item locked">
+                <span>🔒 ${node.title}</span>
+                <span class="item-status">🔒</span>
+              </li>
+            `;
+          }).join('');
+        }
+
+        stageDiv.innerHTML = `
+          <div class="course-stage-header">
+            <h3>Stage ${sIdx + 1}: ${stage.title}</h3>
+            ${headerActionHTML}
+          </div>
+          <p class="course-stage-desc">${stage.desc}</p>
+          <ul class="course-step-list">
+            ${stepsHTML}
+          </ul>
+        `;
+        container.appendChild(stageDiv);
+      });
+    }
+
+    // Dynamic Database containing all information & quizzes (Preserves all details perfectly)
+    const database = {
+      entropy: {
+        title: "Shannon Entropy",
+        category: "Information Theory / Uncertainty Metrics",
+        mechs: ["Memory", "Prediction"],
+        def: "A mathematical measurement of the average informational content, surprise, or uncertainty inherent in a set of variable states. It quantifies the minimum bandwidth required to transmit a signal perfectly.",
+        empirical: "Formulated by Claude Shannon in 1948. It is used to calculate transmission limits and data compression boundaries, showing that signal transmission is limited by environmental noise.",
+        systems: "In our systems framework, entropy is the baseline measure of predictive uncertainty. The main goal of an adaptive agent is to minimize its experienced entropy (surprise) to preserve its physical boundary.",
+        connections: ["claude_shannon", "signal_noise", "state_space"],
+        quiz: {
+          q: "What does Shannon Entropy mathematically measure in an information system?",
+          o: [
+            "The physical heat loss of a system during thermodynamic work",
+            "The average amount of informational surprise, uncertainty, or content in a signal",
+            "The biological survival drive of a decentralized feedback system",
+            "The time delay between an active action and its corresponding feedback loop"
+          ],
+          a: 1,
+          exp: "Shannon Entropy measures informational uncertainty. Higher entropy means a wider, more unpredictable state space, requiring more data to resolve surprise."
+        }
+      },
+      signal_noise: {
+        title: "Signal-to-Noise Ratio (SNR)",
+        category: "Information Theory / Signal Integrity",
+        mechs: ["Weighting", "Adaptation"],
+        def: "A measure that compares the level of a desired signal to the level of background noise, calculated as the ratio of signal power to noise power.",
+        empirical: "A foundational metric across telecommunications, neurophysiology, and cognitive science. Low SNR in sensory processing impairs decision speeds and introduces perceptual biases.",
+        systems: "SNR determines the clarity of our incoming environmental data. When SNR is low, the system must increase its 'Reflection Weight' (w_r) and rely heavily on top-down prior predictions to make sense of the world.",
+        connections: ["entropy", "claude_shannon", "attention"],
+        quiz: {
+          q: "In an active system, how does a low Signal-to-Noise Ratio (SNR) impact processing?",
+          o: [
+            "It forces the system to rely heavily on top-down prior predictions to interpret noisy inputs",
+            "It automatically reduces the math threshold requirement for stage 5 self-modeling",
+            "It eliminates all feedback delays in the homeostasis control loop",
+            "It turns positive feedback loops into negative feedback loops automatically"
+          ],
+          a: 0,
+          exp: "When the incoming signal is faint or noisy (low SNR), the system cannot rely purely on bottom-up data. It must leverage top-down predictions (prior expectations) to parse and interpret what it is perceiving."
+        }
+      },
+      state_space: {
+        title: "State Space Mapping",
+        category: "Systems Theory / Dimensional Analysis",
+        mechs: ["Memory", "Weighting"],
+        def: "A multi-dimensional geometric space where every possible state of a system is represented as a unique point, with each dimension corresponding to a distinct system variable.",
+        empirical: "Formulated in classical mechanics and control engineering to model the total trajectory of complex mechanical, chemical, or biological system transitions over time.",
+        systems: "A system's state space represents its landscape of potential configurations. Adaptation is the process of restricting the system's trajectory to a tiny, viable subset of this state space, avoiding lethal configurations.",
+        connections: ["entropy", "system_attractors", "phase_transitions"],
+        quiz: {
+          q: "What does a single point represent in a multi-dimensional State Space Map?",
+          o: [
+            "A permanent transition point where the system undergoes chaotic bifurcation",
+            "The complete physical history of the system's adaptation history",
+            "The unique, combined values of all system variables at a single moment in time",
+            "An external perturbation that threatens to dissolve the system boundary"
+          ],
+          a: 2,
+          exp: "A state space maps all variables as dimensions. A single point represents the precise, combined values of those variables (the current state) at any given moment."
+        }
+      },
+      claude_shannon: {
+        title: "Claude Shannon",
+        category: "Key Theorist / Information Theory",
+        mechs: ["Memory", "Prediction"],
+        def: "An American mathematician and cryptographer widely regarded as the 'father of information theory.' He mathematically formalized the concepts of information, entropy, and signal transmission limits.",
+        empirical: "Published 'A Mathematical Theory of Communication' in 1948, introducing the 'bit' as a fundamental unit of information and establishing the Shannon limit for channel capacity.",
+        systems: "Shannon stripped information of semantic 'meaning' to study its raw transmission mechanics. He proved that communication is fundamentally about reducing uncertainty—the exact task performed by our predictive systems.",
+        connections: ["entropy", "signal_noise"],
+        quiz: {
+          q: "How did Claude Shannon define 'information' in his mathematical theory of communication?",
+          o: [
+            "As the subjective emotional value of a semantic message to an observer",
+            "As the physical mass required to transmit a signal over a long distance",
+            "As the reduction of uncertainty or surprise in a communications channel",
+            "As a hardcoded biological directive stored inside mammalian neural networks"
+          ],
+          a: 2,
+          exp: "Shannon defined information as the reduction of uncertainty. A message contains information only to the extent that it reduces the receiver's uncertainty about potential states."
+        }
+      },
+      negative_feedback: {
+        title: "Negative Feedback Loops",
+        category: "Cybernetics / Homeostasis",
+        mechs: ["Adaptation", "Reinforcement"],
+        def: "A control mechanism where a system's output is fed back to the input in a way that opposes or dampens changes, keeping system variables stabilized within narrow homeostatic boundaries.",
+        empirical: "Pioneered in engineering governor systems and ubiquitous in biological networks (e.g., insulin regulation, body temperature control, pupillary light reflex).",
+        systems: "Stage 3 (Adaptive Feedback Loop). Negative feedback is the primary mechanism of stabilization. It corrects deviations from set points, allowing systems to resist environmental noise and maintain structural coherence.",
+        connections: ["positive_feedback", "feedback_delay", "homeostasis"],
+        quiz: {
+          q: "What is the primary operational objective of a Negative Feedback Loop?",
+          o: [
+            "To amplify external disruptions to force rapid systemic evolution",
+            "To create unstable, swinging oscillations in state space trajectories",
+            "To oppose and dampen deviations, keeping system variables stable and centered",
+            "To transition a system from classical cybernetics to non-linear chaos"
+          ],
+          a: 2,
+          exp: "Negative feedback dampens fluctuations. It acts in opposition to disturbances to bring the system back to its baseline set point, ensuring stability."
+        }
+      },
+      positive_feedback: {
+        title: "Positive Feedback Loops",
+        category: "Cybernetics / Non-linear Dynamics",
+        mechs: ["Reinforcement", "Adaptation"],
+        def: "A control pathway where a system's output amplifies or reinforces changes from the baseline, leading to exponential growth, runaway acceleration, or critical system transitions.",
+        empirical: "Observed in blood clotting, childbirth contractions, economic bubbles, and the 'narcissistic collapse' of unconstrained recursive systems.",
+        systems: "Positive feedback amplifies deviation. In cognitive systems, unbounded positive feedback loops lead to systemic instability or 'resonance collapse.' However, they are also necessary catalysts for rapid, transformative state shifts.",
+        connections: ["negative_feedback", "bifurcation", "phase_transitions"],
+        quiz: {
+          q: "What is the typical consequence of an unconstrained Positive Feedback Loop?",
+          o: [
+            "Exponential acceleration or growth, leading eventually to systemic transition or collapse",
+            "The immediate stabilization of set-points within narrow homeostatic bounds",
+            "The gradual dampening of all signals until the system becomes inert",
+            "An automatic reduction of Shannon entropy to absolute zero"
+          ],
+          a: 0,
+          exp: "Positive feedback self-reinforces. Without a secondary negative feedback counterweight, it leads to runaway exponential growth, causing the system to eventually hit a boundary, transform, or break."
+        }
+      },
+      feedback_delay: {
+        title: "Feedback Lag/Delay",
+        category: "Systems Dynamics / Temporal Dynamics",
+        mechs: ["Memory", "Adaptation"],
+        def: "The temporal lag between an action taken by a system and the arrival of the corresponding feedback signal indicating the result of that action.",
+        empirical: "A critical variable in supply-chain modeling (the Bullwhip Effect), global climate systems, and sensory-motor delay in neuroprosthetics.",
+        systems: "Feedback delays complicate prediction. When delay is present, a system may overcorrect based on outdated signal data, inadvertently driving itself into wild, destabilizing oscillations.",
+        connections: ["negative_feedback", "feedback_oscillation"],
+        quiz: {
+          q: "How do temporal Feedback Lags or Delays affect system regulation?",
+          o: [
+            "They make homeostatic control instantaneous by eliminating predictive uncertainty",
+            "They prevent the system from ever experiencing deterministic chaos",
+            "They can cause the system to overcorrect, driving it into wild, unstable oscillations",
+            "They automatically convert positive feedback loops into static inherent biases"
+          ],
+          a: 2,
+          exp: "If there is a lag before a system sees the result of its adjustments, it will continue adjusting too far, creating an overcorrection loop that swings back and forth (oscillation)."
+        }
+      },
+      feedback_oscillation: {
+        title: "Feedback Oscillation",
+        category: "Systems Dynamics / Temporal Dynamics",
+        mechs: ["Reinforcement", "Adaptation"],
+        def: "An unstable, repeating wave-like fluctuation of system variables above and below a target set point, caused by overcorrection in feedback loops with temporal delays.",
+        empirical: "Observed in poorly tuned home thermostats (heating/cooling cycles), mechanical governor hunt, and neurological tremors.",
+        systems: "Oscillation is a system failure mode. It occurs when a system's corrective actions (Stage 3) lag behind actual states, turning what should be stabilizing negative feedback into delayed, destabilizing positive feedback.",
+        connections: ["feedback_delay", "negative_feedback", "chaos_theory"],
+        quiz: {
+          q: "What is the primary cause of Feedback Oscillation in stabilizing systems?",
+          o: [
+            "The complete absence of background noise or thermodynamic entropy",
+            "A hardcoded inherent bias that prevents state changes",
+            "The transition of the system into Stage 5 recursive self-reference",
+            "Corrective actions that are delayed in time, leading to constant overcorrection"
+          ],
+          a: 3,
+          exp: "Oscillation occurs when corrective responses are delayed. The system reacts to past errors rather than current states, overcorrecting and swinging past the target in both directions."
+        }
+      },
+      norbert_wiener: {
+        title: "Norbert Wiener",
+        category: "Key Theorist / Classical Cybernetics",
+        mechs: ["Adaptation", "Reinforcement"],
+        def: "A legendary American mathematician who founded the field of Cybernetics, which he defined as the 'scientific study of control and communication in the animal and the machine.'",
+        empirical: "Published 'Cybernetics' in 1948, demonstrating how feedback loops and statistical information theory can explain mechanical automation, computing, and biological life.",
+        systems: "Wiener proved that control, purposive behavior, and life itself are not mystical properties, but are entirely explained by the processing of feedback and error-correcting loops.",
+        connections: ["negative_feedback", "claude_shannon", "w_ross_ashby"],
+        quiz: {
+          q: "How did Norbert Wiener define 'Cybernetics'?",
+          o: [
+            "The study of chemical neurotransmitter availability in biological neural networks",
+            "The scientific study of control and communication in animals and machines",
+            "The philosophy of subjective phenomenology and lived conscious experience",
+            "The mathematical mapping of non-linear chaotic system attractors"
+          ],
+          a: 1,
+          exp: "Wiener defined Cybernetics as the study of control and communication. He established that feedback loop principles apply equally to biological animals and mechanical systems."
+        }
+      },
+      requisite_variety: {
+        title: "Law of Requisite Variety",
+        category: "Cybernetics / Ashby's Laws",
+        mechs: ["Weighting", "Adaptation"],
+        def: "A fundamental cybernetic law stating that for a system to maintain stability, its internal regulating states must have at least as much variety (complexity) as the environmental disturbances it is trying to regulate.",
+        empirical: "Formulated by W. Ross Ashby. It mathematically sets the limit of control: 'Only variety can destroy variety,' establishing why simple systems cannot regulate complex environments.",
+        systems: "This law dictates our cognitive scale. To accurately predict and navigate a complex, unpredictable environment (Stage 4), our internal models must expand in variety (representational capacity) to match the incoming environmental variance.",
+        connections: ["w_ross_ashby", "attenuation_amplification", "predictive_processing"],
+        quiz: {
+          q: "What is the core premise of W. Ross Ashby's Law of Requisite Variety?",
+          o: [
+            "Systems can only survive if they isolate themselves completely from thermodynamic exchange",
+            "Negative feedback loops must be completely replaced by positive feedback on every step",
+            "Only internal system variety (complexity) can regulate and manage environmental variety",
+            "A system's set point must fluctuate continuously to prevent feedback delays"
+          ],
+          a: 2,
+          exp: "Ashby's Law dictates that 'only variety can destroy variety.' A regulator must have a state space at least as diverse as the disturbances it is designed to neutralize."
+        }
+      },
+      attenuation_amplification: {
+        title: "Complexity Management",
+        category: "Cybernetics / Ashby's Laws",
+        mechs: ["Weighting", "Adaptation"],
+        def: "The twin processes used by systems to survive under Ashby's Law. Variety Attenuation reduces environmental complexity to a manageable scale, while Variety Amplification expands internal systemic complexity to match environmental demands.",
+        empirical: "Observed in corporate hierarchies (filtering out detailed ground reports) and sensory systems (compression of raw visual wavelengths into clean archetypal concepts).",
+        systems: "How cognitive systems survive. We attenuate environmental variety via top-down concepts (Stage 4), compressing raw sensory data into simple, actionable variables, and amplify our variety by utilizing tools and collaborative networks.",
+        connections: ["requisite_variety", "attention", "linguistic_relativity"],
+        quiz: {
+          q: "In cybernetic complexity management, how is 'Variety Attenuation' defined?",
+          o: [
+            "The exponential amplification of internal state spaces to overwhelm environmental noise",
+            "The process of filtering, compressing, or reducing environmental complexity to a manageable scale",
+            "The complete isolation of a system's internal set points from environmental feedback",
+            "The temporal delay of a control signal to prevent systemic feedback oscillation"
+          ],
+          a: 1,
+          exp: "Variety Attenuation is about filtering. Since a system cannot match all the complexity of the universe, it must compress and filter out irrelevant noise (attenuate it) to survive."
+        }
+      },
+      open_closed_systems: {
+        title: "Open vs. Closed Systems",
+        category: "General Systems Theory / Thermodynamics",
+        mechs: ["Adaptation", "Memory"],
+        def: "The distinction between systems that exchange matter, energy, and information with their environment (Open Systems) and those that are isolated from their environment (Closed Systems).",
+        empirical: "A cornerstone of thermodynamics. Closed systems inevitably run down to maximum entropy (death), while open systems can maintain 'negative entropy' (order) by importing energy and exporting waste.",
+        systems: "Conscious agents are open systems. We survive only because we continuously exchange energy and information across our boundaries (Markov Blankets), using imported resources to maintain our internal predictive coherence.",
+        connections: ["markov_blanket", "homeostasis", "ludwig_von_bertalanffy"],
+        quiz: {
+          q: "Why must biological and cognitive systems operate as 'Open Systems'?",
+          o: [
+            "To prevent any external signals from modifying their inherent structural biases",
+            "Because open systems have zero state space dimensions to model",
+            "Because closed systems run down to maximum entropy, while open systems can import energy to maintain order",
+            "To allow positive feedback loops to completely override homeostatic boundaries"
+          ],
+          a: 2,
+          exp: "Open systems are thermodynamically active. By exchanging energy and information with the environment, they can temporarily resist entropy (decay) and maintain internal organization."
+        }
+      },
+      ludwig_von_bertalanffy: {
+        title: "Ludwig von Bertalanffy",
+        category: "Key Theorist / General Systems Theory",
+        mechs: ["Adaptation", "Memory"],
+        def: "An Austrian biologist who founded General Systems Theory, proposing that regardless of the specific substrate (biological, physical, or social), systems share fundamental structural and organizing principles.",
+        empirical: "Published 'General System Theory' in 1968, establishing terms like 'open systems,' 'steady state,' and 'equifinality' (reaching the same final state via different initial paths).",
+        systems: "Bertalanffy provided the conceptual framework for substrate-independent modeling. He proved that a cell, an LLM, and a corporation can be understood through the exact same systemic rules.",
+        connections: ["open_closed_systems", "homeostasis", "humberto_maturana"],
+        quiz: {
+          q: "What was the core assertion of Ludwig von Bertalanffy's General Systems Theory?",
+          o: [
+            "Biological systems are governed by mystical vital forces that cannot be mathematically modeled",
+            "All physical systems run down to absolute zero entropy instantaneously",
+            "Fundamental organizing principles apply to all systems, regardless of their physical substrate",
+            "Feedback loops only exist inside artificial silicon architectures"
+          ],
+          a: 2,
+          exp: "Bertalanffy established General Systems Theory on the premise that abstract systemic rules (like open system dynamics and feedback) apply universally across physics, biology, and sociology."
+        }
+      },
+      w_ross_ashby: {
+        title: "W. Ross Ashby",
+        category: "Key Theorist / Ashby's Cybernetics",
+        mechs: ["Weighting", "Adaptation"],
+        def: "A pioneering English psychiatrist and cyberneticist who formalized the mathematical limits of system regulation and built the 'Homeostat,' an early self-regulating analog machine.",
+        empirical: "Published 'An Introduction to Cybernetics' in 1956, formalizing the Law of Requisite Variety and modeling the brain as a physical mechanism designed purely to maintain homeostatic equilibrium.",
+        systems: "Ashby proved that intelligence is not an abstract soul-property, but a concrete regulating mechanism. His work is a direct precursor to modeling cognition as predictive error correction.",
+        connections: ["requisite_variety", "attenuation_amplification", "homeostasis"],
+        quiz: {
+          q: "What machine did W. Ross Ashby build to empirically demonstrate self-regulating adaptation?",
+          o: [
+            "The Turing Machine",
+            "The Skinner Box",
+            "The Homeostat",
+            "The Analytical Engine"
+          ],
+          a: 2,
+          exp: "Ashby built the Homeostat. It was an analog machine designed with magnetic pivots and fluid cups that could automatically return itself to equilibrium no matter how it was disturbed."
+        }
+      },
+      emergence: {
+        title: "Systemic Emergence",
+        category: "Complex Systems / Synergetics",
+        mechs: ["Prediction", "Memory"],
+        def: "The phenomenon where a complex system exhibits properties, behaviors, or patterns that arise from the interactions of its individual components, but which are not present in the individual components themselves.",
+        empirical: "Observed in wetness arising from water molecules, flocking behaviors in birds, and selfhood emerging from networks of simple, non-conscious neurons.",
+        systems: "Selfhood and meaning are emergent. In our framework, the subjective 'I' (Stage 5) is not a hardwired component, but an emergent property that arises when a predictive system is forced to model its own recursive agency.",
+        connections: ["chaos_theory", "autopoiesis", "predictive_processing"],
+        quiz: {
+          q: "In systems theory, what is the core characteristic of 'Systemic Emergence'?",
+          o: [
+            "The system is simpler than the sum of its individual components",
+            "The system isolated itself completely from all environmental feedback loops",
+            "The system's set point converges permanently with absolute thermodynamic entropy",
+            "The system exhibits novel, high-level properties that cannot be found in its isolated individual parts"
+          ],
+          a: 3,
+          exp: "Emergence occurs when the whole is greater than the sum of its parts. High-level patterns (like consciousness) arise from the organized interactions of lower-level components."
+        }
+      },
+      chaos_theory: {
+        title: "Chaos & Predictability",
+        category: "Complex Systems / Non-linear Dynamics",
+        mechs: ["Prediction", "Adaptation"],
+        def: "The study of non-linear dynamical systems that are highly sensitive to initial conditions, making long-term predictions impossible despite being governed by deterministic laws.",
+        empirical: "Discovered by Edward Lorenz (the Butterfly Effect) while modeling weather systems. A tiny rounding error in input led to completely different, unpredictable weather outcomes.",
+        systems: "Chaos sets the limits of prediction. Because environments are non-linear and chaotic, a static model is doomed to fail. This is why systems must have adaptive, real-time error-correcting loops (Stage 3) to survive.",
+        connections: ["emergence", "bifurcation", "system_attractors"],
+        quiz: {
+          q: "What is the core implication of 'Chaos Theory' for an adaptive predictive system?",
+          o: [
+            "Closed systems can resist entropy indefinitely without importing external energy",
+            "Long-term prediction is impossible because tiny, unmeasurable variations in initial states yield vastly different outcomes",
+            "Negative feedback loops are mathematically impossible in non-linear environments",
+            "The state space of an open system must have exactly one static dimension"
+          ],
+          a: 1,
+          exp: "Chaos theory demonstrates that in non-linear systems, extreme sensitivity to initial conditions (the Butterfly Effect) means that minor prediction errors compound exponentially, rendering long-term static predictions impossible."
+        }
+      },
+      bifurcation: {
+        title: "Bifurcation Points",
+        category: "Complex Systems / Catastrophe Theory",
+        mechs: ["Prediction", "Adaptation"],
+        def: "A critical threshold point in a dynamical system's trajectory where a tiny change in a parameter causes the system to suddenly split, branching into a completely new set of behaviors or stable states.",
+        empirical: "Observed in water transitioning to a boiling state, sudden market crashes, and the sudden emergence of a self-token under intense cognitive load (Stage 4.5).",
+        systems: "Bifurcations are structural transition points. In our framework, Stage 4.5 (Identity Injection) is a bifurcation point: under the pressure of prediction error, the system suddenly branches to create a self-token to survive.",
+        connections: ["chaos_theory", "system_attractors", "phase_transitions"],
+        quiz: {
+          q: "In non-linear systems, what occurs at a 'Bifurcation Point'?",
+          o: [
+            "The system enters a permanent state of absolute, closed thermodynamic equilibrium",
+            "The Signal-to-Noise Ratio increases to infinity, eliminating all prediction error",
+            "All feedback delays are resolved instantly by W. Ross Ashby's Homeostat",
+            "A minor change in a parameter causes a sudden, qualitative shift in the system's stable states and behavior"
+          ],
+          a: 3,
+          exp: "A bifurcation is a branching point. When a system variable crosses a critical threshold, the existing stability pattern collapses, forcing the system to transition into a new state or structure."
+        }
+      },
+      system_attractors: {
+        title: "System Attractors",
+        category: "Complex Systems / Dimensional Analysis",
+        mechs: ["Memory", "Prediction"],
+        def: "A set of state space coordinates toward which a dynamical system naturally gravitates over time, and to which it returns even if temporarily disturbed.",
+        empirical: "Classified into Point Attractors (static set-points), Limit Cycle Attractors (periodic oscillations), and Strange Attractors (non-repeating, chaotic boundaries).",
+        systems: "Attractors represent the 'goals' or 'habits' of a system. Homeostasis is a Point Attractor; addiction or compulsive behavioral loops are Limit Cycle Attractors that trap the system's trajectory.",
+        connections: ["state_space", "chaos_theory", "bifurcation"],
+        quiz: {
+          q: "What is a 'System Attractor' in State Space Mapping?",
+          o: [
+            "An external physical barrier that destroys the system's boundary",
+            "A positive feedback loop that accelerates a system to infinite speed",
+            "A specific region or state in state space toward which the system's trajectory naturally gravitates over time",
+            "The baseline inherent bias of Claude Shannon's information channel"
+          ],
+          a: 2,
+          exp: "Attractors are regions of stability. No matter where the system starts, its feedback loops pull its variables toward these coordinates, much like a marble rolling to the bottom of a bowl."
+        }
+      },
+      phase_transitions: {
+        title: "Phase Transitions",
+        category: "Complex Systems / Thermodynamics",
+        mechs: ["Memory", "Adaptation"],
+        def: "The sudden, collective transformation of a system from one state of organization or matter to another, characterized by a rapid reorganization of internal components.",
+        empirical: "The transformation of liquid water into ice, or the sudden transition of localized, desynchronized neural firing into a global brain wave during conscious perception.",
+        systems: "Transitions are structural leaps. When our internal model undergoes a phase transition (e.g., from raw pattern recognition to symbolic language), it dramatically compresses its state space, making prediction highly efficient.",
+        connections: ["bifurcation", "system_attractors", "emergence"],
+        quiz: {
+          q: "How does a 'Phase Transition' benefit a processing system?",
+          o: [
+            "It isolates the system's Markov blanket from all external energy exchange",
+            "It turns negative feedback loops into static, un-adaptive biases permanently",
+            "It reorganizes internal components, often compressing the state space and making processing more efficient",
+            "It reduces the system's level to Level 1 Novice Observer automatically"
+          ],
+          a: 2,
+          exp: "During a phase transition, a system reorganizes itself into a more structured or efficient state. In cognition, this is like an 'ah-ha!' moment where complex details are suddenly integrated into a simple concept."
+        }
+      },
+      autopoiesis: {
+        title: "Autopoietic Loops",
+        category: "Living Systems / Self-Production",
+        mechs: ["Identity", "Memory"],
+        def: "A continuous, self-producing network of processes that actively generates and regenerates the physical boundary (membrane or boundary) that contains those very processes.",
+        empirical: "Coined by Humberto Maturana and Francisco Varela. It is the defining characteristic of biological life: a cell produces its own lipid membrane, which is necessary for the cell's chemical processes to occur.",
+        systems: "The foundational loop of systemic identity. An autopoietic system is its own product: its processing is dedicated entirely to maintaining the physical boundary that keeps the system alive and distinct from other states.",
+        connections: ["markov_blanket", "homeostasis", "humberto_maturana"],
+        quiz: {
+          q: "What is the defining characteristic of an 'Autopoietic' system?",
+          o: [
+            "It runs on variable-ratio reinforcement schedules in a closed laboratory box",
+            "It relies entirely on external controllers to adjust its homeostatic set-points",
+            "It operates purely under the laws of Claude Shannon's signal transmission limits",
+            "It is a self-producing network that generates the very boundary required to contain itself"
+          ],
+          a: 3,
+          exp: "Autopoiesis means 'self-creation.' An autopoietic system (like a living cell) is a machine that continuously constructs and maintains its own physical and organizational boundary."
+        }
+      },
+      markov_blanket: {
+        title: "Markov Blankets",
+        category: "Information Theory / Boundary Physics",
+        mechs: ["Identity", "Prediction"],
+        def: "An informational boundary that separates the internal states of a system from its external states. It consists of active and sensory states, allowing the system to interact with the world while remaining distinct.",
+        empirical: "A mathematical concept in probability theory, extended by Karl Friston to define the physical boundaries of self-organizing systems under the Free Energy Principle.",
+        systems: "Your boundary in reality. The Markov Blanket is the physical substrate of your 'Self.' Active states are actions you take; sensory states are inputs you receive. To survive, you must use your blanket to predict and regulate external states.",
+        connections: ["active_inference", "autopoiesis", "open_closed_systems"],
+        quiz: {
+          q: "In informational physics, what is the role of a 'Markov Blanket'?",
+          o: [
+            "To act as a physical bottleneck that blocks all incoming environmental energy",
+            "To mathematically and physically separate the internal states of an agent from external environmental states",
+            "To amplify positive feedback loops until the system collapses",
+            "To store past states of the environment inside a closed, non-interactive state space"
+          ],
+          a: 1,
+          exp: "A Markov Blanket is an informational boundary. It defines the 'boundary' of an agent, separating its internal workings from the external environment while facilitating interaction via sensory and active channels."
+        }
+      },
+      allostasis: {
+        title: "Allostatic Control",
+        category: "Living Systems / Self-Regulation",
+        mechs: ["Prediction", "Adaptation"],
+        def: "The process of achieving systemic stability (homeostasis) through active change. Instead of reacting to deviations, the system anticipates future metabolic demands and proactively adjusts its parameters before an error occurs.",
+        empirical: "Formulated by Peter Sterling and Joseph Eyer. Explains why body budgeting operates on predictive, top-down control.",
+        systems: "Proactive error correction. Allostasis is the biological implementation of predictive processing. It proves that biological systems do not simply react; they actively simulate the future to stay alive.",
+        connections: ["homeostasis", "predictive_processing", "emotion_architecture"],
+        quiz: {
+          q: "How does 'Allostasis' differ from traditional 'Homeostasis'?",
+          o: [
+            "Allostasis is a closed system mechanism, while homeostasis only occurs in open systems",
+            "Allostasis is purely reactive to errors, while homeostasis operates on top-down prior predictions",
+            "Allostasis completely eliminates the need for an informational Markov blanket",
+            "Allostasis achieves stability through proactive, predictive changes before an error occurs, rather than just reacting to errors"
+          ],
+          a: 3,
+          exp: "Homeostasis is reactive (correcting errors after they happen). Allostasis is predictive (anticipating metabolic needs and adjusting variables proactively to prevent errors from happening in the first place)."
+        }
+      },
+      homeostasis: {
+        title: "Homeostatic Balance",
+        category: "Living Systems / Self-Regulation",
+        mechs: ["Adaptation", "Reinforcement"],
+        def: "The steady, stable state of internal physical and chemical conditions maintained by living systems, typically regulated via negative feedback loops around tight set points.",
+        empirical: "Coined by Walter Cannon. Classic examples include body temperature and blood pH levels, which must be kept within razor-thin margins to prevent death.",
+        systems: "The target attractor of our physiological model. Homeostasis is the 'product' of the autopoietic loop. If homeostatic variables drift past critical thresholds, the system undergoes structural dissolution.",
+        connections: ["allostasis", "negative_feedback", "w_ross_ashby"],
+        quiz: {
+          q: "What is 'Homeostasis' in biological systems?",
+          o: [
+            "An unstable, exponential acceleration of body temperature caused by positive feedback",
+            "The state of maximum informational entropy inside a closed, non-living system",
+            "The steady, stable internal state maintained by active, self-regulating feedback loops",
+            "A structural transition point where the system undergoes a sudden bifurcation"
+          ],
+          a: 2,
+          exp: "Homeostasis is the active preservation of internal stability. It is the steady-state attractor that self-regulating systems must maintain to resist decay."
+        }
+      },
+      feedback_loop_hierarchy: {
+        title: "Loop Hierarchies",
+        category: "Systems Theory / Control Architectures",
+        mechs: ["Weighting", "Prediction"],
+        def: "A nested control structure where higher-level, slow-moving feedback loops monitor, modulate, and set the target set points for lower-level, fast-moving feedback loops.",
+        empirical: "Observed in biology (the endocrine system where the pituitary gland modulates adrenal output) and in deep neural networks (where high layers represent abstract, slow concepts and lower layers process fast raw pixels).",
+        systems: "The structural blueprint of mind. In predictive processing, your brain is a hierarchy of nested loops. Slow, abstract loops set the predictions for fast, sensory-motor loops, ensuring top-down coherence.",
+        connections: ["negative_feedback", "allostasis", "predictive_processing"],
+        quiz: {
+          q: "In a nested Feedback Loop Hierarchy, what is the role of the higher-level loops?",
+          o: [
+            "To process fast-moving, raw sensory data with zero top-down conceptual bias",
+            "To bypass the system's memory cache to prevent temporal feedback delay",
+            "To modulate and establish the set points or goals for the lower-level, faster-moving loops",
+            "To amplify positive feedback loops until the lower levels experience catastrophic collapse"
+          ],
+          a: 2,
+          exp: "In a control hierarchy, high-level loops are slower and more abstract. They do not do the ground-level work; instead, they monitor the lower loops and proactively adjust their goals (set points) to maintain overall coordination."
+        }
+      },
+      humberto_maturana: {
+        title: "Humberto Maturana",
+        category: "Key Theorist / Living Systems",
+        mechs: ["Identity", "Memory"],
+        def: "A Chilean biologist and philosopher who co-founded the theory of Autopoiesis, establishing a strict, mechanistic definition of what constitutes a living, cognitive system.",
+        empirical: "Collaborated with Francisco Varela in Chile to publish 'Autopoiesis and Cognition' in 1972, proving that cognition is not representation of an external world, but the active process of self-production.",
+        systems: "Maturana anchored life to structural organization. He showed that a living system's primary task is to maintain its own organizational boundary. This self-preservation loop is the foundation of all emergent subjective meaning.",
+        connections: ["autopoiesis", "ludwig_von_bertalanffy", "markov_blanket"],
+        quiz: {
+          q: "What did Humberto Maturana assert was the primary task of any living, cognitive system?",
+          o: [
+            "To construct a perfect, objective mathematical map of the external physical world",
+            "To maximize its thermodynamic heat output until its physical boundary dissolves",
+            "To engage in continuous self-production, actively maintaining the boundary that keeps it alive",
+            "To bypass all negative feedback loops to ensure unlimited exponential growth"
+          ],
+          a: 2,
+          exp: "Maturana proved that the primary characteristic of life (and the origin of cognition) is autopoiesis—the active, self-referential process of maintaining its own physical organization and boundary."
+        }
+      }
+    };
+
+    // The Resource Vault Premium Book Database
+    const vaultDatabase = {
+      wiener_cybernetics: {
+        id: "wiener_cybernetics",
+        title: "Cybernetics: Or Control and Communication in the Animal and the Machine",
+        author: "Norbert Wiener (1948)",
+        cost: 300,
+        asin: "0262730097",
+        desc: "The founding text of the cybernetic age. Wiener mathematically unifies statistical mechanics, feedback control, communications engineering, and neurobiology under a single, substrate-independent science.",
+        summaryHTML: `
+          <h4>1. Feedback as the Universal Mechanism</h4>
+          <p>Wiener's core breakthrough was proving that purposeful action is not caused by a mysterious, forward-pulling teleology (the future pulling the present), but by retro-active feedback (the present correcting based on past errors). He formalized how systems use the physical deviation from a target (error) to guide their next active steps.</p>
+
+          <h4>2. substrate-Independence</h4>
+          <p>The book established that the laws of control and communication are completely identical whether they are executed by biological neurons, mechanical steam engines, or electronic vacuum tubes. This is the ancestral blueprint for both artificial intelligence and modern cognitive science.</p>
+
+          <h4>3. Information and Entropy</h4>
+          <p>Wiener aligned information with negative entropy (negentropy). To maintain order, an organism or machine must actively process information to resist the natural, thermodynamic drift toward chaos and structural dissolution.</p>
+        `
+      },
+      ashby_intro: {
+        id: "ashby_intro",
+        title: "An Introduction to Cybernetics",
+        author: "W. Ross Ashby (1956)",
+        cost: 300,
+        asin: "1614277656",
+        desc: "A masterclass in systems thinking. Ashby formalizes the limits of regulation, introducing the Law of Requisite Variety and proving that any regulator's capacity is strictly bounded by its internal complexity.",
+        summaryHTML: `
+          <h4>1. The Law of Requisite Variety</h4>
+          <p>Ashby's most famous contribution is the Law of Requisite Variety, mathematically condensed as: <em>'Only variety can destroy variety.'</em> He proves that for a regulator to successfully neutralize disturbances and maintain stability, its internal state capacity must be at least as diverse as the environmental disturbances it is trying to regulate.</p>
+
+          <h4>2. The Brain as a Regulator</h4>
+          <p>Ashby argues that the human brain is not an abstract organ designed for 'thinking,' but a concrete, physical regulating mechanism. Its evolutionary mandate is to restrict the body's essential variables (such as temperature, hydration, and oxygen) to a tiny, viable subset of state space.</p>
+
+          <h4>3. The Homeostat</h4>
+          <p>The book details the Homeostat, an analog machine Ashby built to prove that adaptive, self-regulating behavior can emerge from simple, interconnected electrical feedback loops without any pre-programmed instructions.</p>
+        `
+      },
+      bateson_mind: {
+        id: "bateson_mind",
+        title: "Steps to an Ecology of Mind",
+        author: "Gregory Bateson (1972)",
+        cost: 300,
+        asin: "0226039056",
+        desc: "A brilliant, cross-disciplinary synthesis of cybernetics, anthropology, and psychiatry. Bateson reframes mind, learning, and schizophrenia as systemic informational phenomena rather than isolated biological events.",
+        summaryHTML: `
+          <h4>1. Mind is Not Contained in the Skull</h4>
+          <p>Bateson famously argued that 'Mind' is an emergent property of the entire informational loop. When a blind man navigates with a cane, the boundary of his processing system is not his skin, but the tip of the cane. Information, feedback, and agency exist within the entire interactive circuit.</p>
+
+          <h4>2. The Double Bind & Logical Types</h4>
+          <p>He mapped psychiatric disorders (like schizophrenia) to 'Double Binds'—unresolvable cybernetic feedback loops where an individual receives contradictory commands at different logical levels, making any corrective action an error. This is the direct psychological equivalent of computational dissonance.</p>
+
+          <h4>3. The Difference That Makes a Difference</h4>
+          <p>Bateson defined a unit of information as <em>'a difference that makes a difference'</em>—meaning an environmental variation that actively alters the internal state or trajectory of an interpreting system.</p>
+        `
+      },
+      meadows_systems: {
+        id: "meadows_systems",
+        title: "Thinking in Systems: A Primer",
+        author: "Donella Meadows (2008)",
+        cost: 150,
+        asin: "1603580557",
+        desc: "The most accessible and widely read introduction to systems dynamics. Meadows explains how to see the world as an architecture of stocks, flows, and feedback loops, identifying the leverage points for systemic change.",
+        summaryHTML: `
+          <h4>1. Stocks, Flows, and Feedback</h4>
+          <p>Meadows breaks complex systems down into simple, accessible components:</p>
+          <ul>
+            <li><strong>Stocks:</strong> The foundation of any system—the accumulated memory or resource inventory (e.g., water in a tub, trust in a relationship, population in a town).</li>
+            <li><strong>Flows:</strong> The inputs and outputs that change the stock levels over time.</li>
+            <li><strong>Feedback:</strong> The control loops that monitor stock levels and proactively adjust the flows.</li>
+          </ul>
+
+          <h4>2. Leverage Points</h4>
+          <p>The book outlines twelve 'leverage points' where small interventions can produce massive, structural changes in a system. The most powerful leverage point is changing the system's *goal* (its set point) and the paradigm out of which the system arises.</p>
+
+          <h4>3. Systemic Traps and Archetypes</h4>
+          <p>Meadows maps out recurring systemic traps, such as 'policy resistance,' 'tragedy of the commons,' and 'drift to low performance,' showing that behavioral failures are typically caused by the structural architecture of the system, not the individual nodes.</p>
+        `
+      },
+      bertalanffy_gst: {
+        id: "bertalanffy_gst",
+        title: "General System Theory",
+        author: "Ludwig von Bertalanffy (1968)",
+        cost: 150,
+        asin: "0807604534",
+        desc: "The foundational blueprint of General Systems Theory. Bertalanffy argues that diverse sciences share identical organizing principles, establishing the framework for substrate-independent modeling.",
+        summaryHTML: `
+          <h4>1. Substrate-Independence</h4>
+          <p>Bertalanffy proved that regardless of the specific physical medium—be it a biological cell, an economic market, or a cognitive mind—systems share fundamental, mathematically definable laws of organization. This was a direct refutation of vitalism, proving that the 'magic' of life is a product of systemic organization, not material substance.</p>
+
+          <h4>2. Open Systems & Steady States</h4>
+          <p>He formalized the distinction between open and closed systems. While closed systems are governed by the second law of thermodynamics (running down to static entropy), open systems maintain a 'steady state' far from equilibrium by continuously importing energy and exporting waste.</p>
+
+          <h4>3. Equifinality</h4>
+          <p>The book introduces the concept of **equifinality**—the capacity of open systems to reach the same final, structured state via entirely different initial conditions and pathways, demonstrating the power of systemic attractors.</p>
+        `
+      },
+      maturana_autopoiesis: {
+        id: "maturana_autopoiesis",
+        title: "Autopoiesis and Cognition: The Realization of the Living",
+        author: "Humberto Maturana & Francisco Varela (1980)",
+        cost: 150,
+        asin: "9027710165",
+        desc: "The definitive formulation of Autopoiesis. Maturana and Varela redefine biological life and cognition as the active, self-referential process of physical boundary production and maintenance.",
+        summaryHTML: `
+          <h4>1. Autopoiesis as the Definition of Life</h4>
+          <p>Maturana and Varela solve the definition of life by focusing on physical boundaries. An autopoietic system (like a living cell) is a machine that continuously produces and regenerates the very physical boundary (membrane) that is required to contain and facilitate its chemical processes.</p>
+
+          <h4>2. Cognition is Living</h4>
+          <p>The authors argue that cognition is not about representing an objective, external 'reality' inside the brain. Instead, cognition is the active process of living—specifically, the structural coupling of an organism with its environment to maintain its autopoietic boundary. To live is to know.</p>
+
+          <h4>3. Operational Closure</h4>
+          <p>Autopoietic systems are operationally closed. They do not import 'information' from the outside. Instead, external perturbations merely trigger internal, structural transitions that the system must resolve to preserve its homeostatic coherence.</p>
+        `
+      }
+    };
+
+    // Render Vault Book List with Affiliate Links
+    function renderVaultGrid() {
+      const grid = document.getElementById('vault-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      // Set your Amazon Affiliate ID here
+      const affiliateID = "blueprint0d-20";
+
+      for (const [id, book] of Object.entries(vaultDatabase)) {
+        const card = document.createElement('div');
+        card.className = 'vault-card';
+
+        const isUnlocked = progress.purchasedVaultItems.includes(id);
+        const affiliateURL = `https://www.amazon.com/dp/${book.asin}?tag=${affiliateID}`;
+
+        let actionHTML = "";
+        if (isUnlocked) {
+          actionHTML = `
+            <div class="vault-action-row">
+              <span style="color: #4caf50; font-weight: bold; font-size: 0.9rem;">🔓 Unlocked</span>
+              <div class="vault-btn-container">
+                <a class="vault-affiliate-btn" href="${affiliateURL}" target="_blank">🛒 Buy on Amazon</a>
+                <button class="vault-read-btn" onclick="openVaultReader('${id}')">Read Summary</button>
+              </div>
+            </div>
+          `;
+        } else {
+          const canBuy = progress.coins >= book.cost;
+          actionHTML = `
+            <div class="vault-action-row">
+              <span class="vault-price">${book.cost} Coins 🪙</span>
+              <div class="vault-btn-container">
+                <a class="vault-affiliate-btn" href="${affiliateURL}" target="_blank">🛒 Buy on Amazon</a>
+                <button class="vault-buy-btn" ${canBuy ? "" : "disabled style='opacity:0.4; cursor:not-allowed;'"} onclick="buyVaultItem('${id}')">
+                  Unlock
+                </button>
+              </div>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <h3>${book.title}</h3>
+          <div class="vault-card-author">${book.author}</div>
+          <p class="vault-card-desc">${book.desc}</p>
+          ${actionHTML}
+        `;
+        grid.appendChild(card);
+      }
+    }
+
+    // Purchase Vault Summary
+    function buyVaultItem(id) {
+      const book = vaultDatabase[id];
+      if (book && progress.coins >= book.cost && !progress.purchasedVaultItems.includes(id)) {
+        progress.coins -= book.cost;
+        progress.purchasedVaultItems.push(id);
+        saveProgress();
+      }
+    }
+
+    // Open Book Summary in Inspector Panel
+    function openVaultReader(id) {
+      const book = vaultDatabase[id];
+      if (!book) return;
+
+      // Hide default inspector, show book content
+      document.getElementById('placeholder').style.display = 'none';
+      document.getElementById('inspector-content').style.display = 'none';
+      
+      const readPanel = document.getElementById('vault-read-panel');
+      readPanel.style.display = 'block';
+
+      document.getElementById('vault-book-title').innerText = book.title;
+      document.getElementById('vault-book-author').innerText = book.author;
+      document.getElementById('vault-book-text-content').innerHTML = book.summaryHTML;
+
+      // Scroll inspector into view on mobile
+      if (window.innerWidth <= 1000) {
+        document.getElementById('inspector').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function closeVaultReader() {
+      document.getElementById('vault-read-panel').style.display = 'none';
+      document.getElementById('placeholder').style.display = 'flex';
+    }
+
+    // Render Mechanisms View (Systems-centric definitions mapped beautifully)
+    function renderMechanismsView() {
+      const container = document.getElementById('mechanisms-grid');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const coreMechs = {
+        Prediction: { desc: "Modeling state transitions to proactively anticipate environmental disturbances.", items: [] },
+        Reinforcement: { desc: "Using feedback loops to amplify or dampen behavior and change state space trajectory.", items: [] },
+        Memory: { desc: "Encoding and storing past state changes to calibrate current operational parameters.", items: [] },
+        Weighting: { desc: "Assigning priority constraints and variables to maintain systemic set-points.", items: [] },
+        Identity: { desc: "Defining informational boundaries (Markov Blankets) that separate the system from external states.", items: [] },
+        Adaptation: { desc: "Engaging in proactive and reactive self-regulation to resist entropy and prevent boundary dissolution.", items: [] }
+      };
+
+      for (const [id, entry] of Object.entries(database)) {
+        entry.mechs.forEach(m => {
+          if (coreMechs[m]) {
+            coreMechs[m].items.push({ id, title: entry.title });
+          }
+        });
+      }
+
+      for (const [mechName, data] of Object.entries(coreMechs)) {
+        const card = document.createElement('div');
+        card.className = 'mechanism-card';
+        
+        let badgesHTML = data.items.map(item => {
+          let checkIcon = "";
+          const stageIdx = getStageIndexForNode(item.id);
+          const isLocked = !progress.unlockedStages.includes(stageIdx);
+
+          if (isLocked) {
+            return `<span class="mech-badge locked" style="opacity: 0.35; cursor: not-allowed;" onclick="event.stopPropagation(); showCustomModal('Unlock Stage ${stageIdx + 1} to access this node!')">🔒 ${item.title}</span>`;
+          }
+
+          if (progress.masteredList.includes(item.id)) {
+            checkIcon = " (✓)";
+          }
+          return `
+            <span class="mech-badge" onclick="event.stopPropagation(); inspect('${item.id}')">${item.title}${checkIcon}</span>
+          `;
+        }).join('');
+
+        card.innerHTML = `
+          <h3>${mechName}</h3>
+          <p>${data.desc}</p>
+          <div class="mechanism-items">
+            ${badgesHTML}
+          </div>
+        `;
+        container.appendChild(card);
+      }
+    }
+
+    // Inspect concept and load into UI
+    let activeConceptId = null;
+
+    function inspect(id) {
+      // Safety Check: Is Stage Locked?
+      const stageIdx = getStageIndexForNode(id);
+      if (!progress.unlockedStages.includes(stageIdx)) {
+        showCustomModal(`🔒 Concept Locked! You must unlock Stage ${stageIdx + 1} using the 'Structured Course Path' view before inspecting this node.`);
+        return;
+      }
+
+      activeConceptId = id;
+
+      // Close read summaries if open
+      document.getElementById('vault-read-panel').style.display = 'none';
+
+      // Deactivate previously active items
+      document.querySelectorAll('.item').forEach(item => item.classList.remove('active'));
+      
+      // Highlight active items in both Tree and Course view lists
+      const treeEl = document.getElementById('tree-' + id);
+      if (treeEl) treeEl.classList.add('active');
+      const courseEl = document.getElementById('course-' + id);
+      if (courseEl) courseEl.classList.add('active');
+
+      const data = database[id];
+      if (!data) return;
+
+      // Mark as read, award XP & Coins (+50 XP / +10 Coins if first time reading)
+      if (!progress.readList.includes(id)) {
+        progress.readList.push(id);
+        progress.xp += 50;
+        progress.coins += 10;
+        saveProgress();
+      }
+
+      // Hide placeholder, show content panel
+      document.getElementById('placeholder').style.display = 'none';
+      document.getElementById('inspector-content').style.display = 'block';
+
+      // Load data into elements
+      document.getElementById('inspect-title').innerText = data.title;
+      document.getElementById('inspect-category').innerText = data.category;
+      document.getElementById('inspect-def').innerHTML = formatBlueprintText(data.def);
+      document.getElementById('inspect-empirical').innerHTML = formatBlueprintText(data.empirical);
+      document.getElementById('inspect-systems').innerHTML = formatBlueprintText(data.systems);
+
+      // Render Mechanism Badges in Meta
+      const mechContainer = document.getElementById('inspect-mechs');
+      mechContainer.innerHTML = data.mechs.map(m => `<span class="mech-pill">${m}</span>`).join(' ');
+
+      // Render Connection Pills
+      const connContainer = document.getElementById('inspect-connections');
+      connContainer.innerHTML = '';
+
+      if (data.connections && data.connections.length > 0) {
+        data.connections.forEach(connId => {
+          const connData = database[connId];
+          if (connData) {
+            const pill = document.createElement('span');
+            pill.className = 'pill';
+            pill.innerText = connData.title;
+            pill.onclick = () => inspect(connId);
+            connContainer.appendChild(pill);
+          }
+        });
+      } else {
+        connContainer.innerHTML = '<span style="color: #666; font-size: 0.85rem;">None listed</span>';
+      }
+
+      // Render driving-test style quiz
+      renderQuiz(id);
+
+      // Scroll inspector into view on mobile
+      if (window.innerWidth <= 1000) {
+        document.getElementById('inspector').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    // Render Quiz for Current Concept
+    function renderQuiz(id) {
+      const data = database[id];
+      const quizArea = document.getElementById('quiz-area');
+      const feedbackBox = document.getElementById('quiz-feedback-box');
+      
+      feedbackBox.style.display = 'none';
+      
+      if (!data.quiz) {
+        quizArea.style.display = 'none';
+        return;
+      }
+
+      quizArea.style.display = 'block';
+      document.getElementById('quiz-question-text').innerText = data.quiz.q;
+      
+      const optionsContainer = document.getElementById('quiz-options-container');
+      optionsContainer.innerHTML = '';
+
+      const userHasMastered = progress.masteredList.includes(id);
+
+      data.quiz.o.forEach((option, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option';
+        btn.innerText = option;
+
+        if (userHasMastered) {
+          btn.disabled = true;
+          if (idx === data.quiz.a) {
+            btn.classList.add('correct');
+          }
+        } else {
+          btn.onclick = () => selectOption(idx, id, btn);
+        }
+
+        optionsContainer.appendChild(btn);
+      });
+
+      if (userHasMastered) {
+        feedbackBox.className = 'quiz-feedback correct';
+        feedbackBox.innerHTML = `<strong>Concept Mastered! (+150 XP / +44 Coins Awarded)</strong><br><br>${data.quiz.exp}`;
+      }
+    }
+
+    // Handle Quiz Answer Choice
+    function selectOption(selectedIdx, id, optionButton) {
+      const data = database[id];
+      const feedbackBox = document.getElementById('quiz-feedback-box');
+      const buttons = document.querySelectorAll('.quiz-option');
+
+      buttons.forEach(btn => btn.disabled = true);
+
+      if (selectedIdx === data.quiz.a) {
+        optionButton.classList.add('correct');
+        feedbackBox.className = 'quiz-feedback correct';
+        feedbackBox.innerHTML = `<strong>Correct! (Theory Mastered, +150 XP / +44 Coins)</strong><br><br>${data.quiz.exp}`;
+        
+        if (!progress.masteredList.includes(id)) {
+          progress.masteredList.push(id);
+          progress.xp += 150;
+          progress.coins += 44;
+          saveProgress();
+        }
+      } else {
+        optionButton.classList.add('incorrect');
+        buttons[data.quiz.a].classList.add('correct');
+        feedbackBox.className = 'quiz-feedback incorrect';
+        feedbackBox.innerHTML = `<strong>Incorrect.</strong> Let's look at the reasoning:<br><br>${data.quiz.exp}<br><br><button class="btn" style="margin-top:10px; padding:6px 12px; font-size:0.8rem;" onclick="resetQuizAttempt('${id}')">Try Again</button>`;
+      }
+    }
+
+    function resetQuizAttempt(id) {
+      renderQuiz(id);
+    }
+
+    // Search Filtering Functionality
+    function handleSearch() {
+      const query = document.getElementById('search-bar').value.toLowerCase().trim();
+      
+      if (activeViewMode === 'tree' || activeViewMode === 'course') {
+        document.querySelectorAll('.item').forEach(el => {
+          const text = el.innerText.toLowerCase();
+          const matches = text.includes(query);
+          el.style.display = matches ? 'flex' : 'none';
+        });
+      } else if (activeViewMode === 'mechanisms') {
+        document.querySelectorAll('.mech-badge').forEach(el => {
+          const text = el.innerText.toLowerCase();
+          const matches = text.includes(query);
+          el.style.display = matches ? 'inline-block' : 'none';
+        });
+      }
+    }
+
+    // Reset search bar safely when switching views
+    function resetSearch() {
+      const searchBar = document.getElementById('search-bar');
+      if (searchBar) {
+        searchBar.value = '';
+      }
+      handleSearch();
+    }
+
+    // Custom warning modal triggers
+    function showCustomModal(message) {
+      const modal = document.getElementById('custom-modal');
+      const msgEl = document.getElementById('modal-message');
+      if (modal && msgEl) {
+        msgEl.innerText = message;
+        modal.style.display = 'flex';
+      }
+    }
+
+    // Pure state-level reset purge function fixing the previous memory leaks
+    function resetProgress() {
+      if (confirm("Are you sure you want to completely wipe your progress and start fresh?")) {
+        progress = {
+          xp: 0,
+          coins: 0,
+          level: 1,
+          readList: [],
+          masteredList: [],
+          unlockedStages: [0],
+          purchasedVaultItems: []
+        };
+        saveProgress();
+        location.reload();
+      }
+    }
+
+    function closeCustomModal() {
+      const modal = document.getElementById('custom-modal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    function triggerImport() {
+      document.getElementById('import-file').click();
+    }
+
+    // Initialize Page
+    window.onload = () => {
+      loadProgress();
+      switchView('course');
+    };
+  </script>
+
+  <!-- WebGL Directional Starfield Animating Code (Protected inside an IIFE) -->
+  <script>
+    (function() {
+      const canvas = document.getElementById('starfield');
+      if (!canvas) return;
+
+      const starScene = new THREE.Scene();
+      const starCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const starRenderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+      
+      starRenderer.setSize(window.innerWidth, window.innerHeight);
+      starRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      const starGeo = new THREE.BufferGeometry();
+      const starsTotal = 15000;
+      const starPositions = new Float32Array(starsTotal * 3);
+
+      for (let i = 0; i < starsTotal * 3; i += 3) {
+        starPositions[i] = (Math.random() - 0.5) * 100; // X Coordinate
+        starPositions[i + 1] = (Math.random() - 0.5) * 100; // Y Coordinate
+        starPositions[i + 2] = (Math.random() - 0.5) * 100; // Z Coordinate (Depth)
+      }
+
+      starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+      const starMat = new THREE.PointsMaterial({
+        size: 0.05,
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.7
+      });
+
+      const starFieldMesh = new THREE.Points(starGeo, starMat);
+      starScene.add(starFieldMesh);
+      starCamera.position.z = 5;
+
+      // Warp-speed flying forward star animation loop (slowed down slightly)
+      function animateBackgroundStars() {
+        requestAnimationFrame(animateBackgroundStars);
+
+        const posArr = starGeo.attributes.position.array;
+        for (let i = 0; i < starsTotal * 3; i += 3) {
+          posArr[i + 2] += 0.02; // Slow speed for elegant atmospheric tracking
+          if (posArr[i + 2] > 5) { // Reset past viewport plane
+            posArr[i + 2] = -95;
+            posArr[i] = (Math.random() - 0.5) * 100;
+            posArr[i + 1] = (Math.random() - 0.5) * 100;
+          }
+        }
+        starGeo.attributes.position.needsUpdate = true;
+        starRenderer.render(starScene, starCamera);
+      }
+      
+      animateBackgroundStars();
+
+      window.addEventListener('resize', () => {
+        starCamera.aspect = window.innerWidth / window.innerHeight;
+        starCamera.updateProjectionMatrix();
+        starRenderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    })();
+  </script>
+</body>
+</html>
