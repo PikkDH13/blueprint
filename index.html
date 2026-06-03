@@ -57,7 +57,6 @@
             pointer-events: none;
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            /* Radial mask: Blur in the center, sharp at the boundaries */
             mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 75%);
             -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 75%);
         }
@@ -70,7 +69,7 @@
             opacity: 0.5;
         }
 
-        /* --- Foggy Nav --- */
+        /* --- Navigation --- */
         nav {
             position: fixed;
             top: 0; width: 100%;
@@ -103,7 +102,6 @@
         .axiom-tag { color: var(--blueprint-blue); text-transform: uppercase; letter-spacing: 5px; font-size: 0.8rem; margin-bottom: 30px; font-weight: 600; }
         h1 { font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; max-width: 1100px; line-height: 1.1; margin-bottom: 40px; letter-spacing: -2px; }
         
-        /* Interactive Glowing Axiom [2] */
         h1 span { 
             color: var(--resonance-purple); 
             text-shadow: 0 0 20px rgba(168, 85, 247, 0.65);
@@ -126,7 +124,43 @@
         #audio-player-bar.active { bottom: 0; }
         .audio-info { display: flex; align-items: center; gap: 20px; font-family: 'JetBrains Mono'; font-size: 0.75rem; color: var(--blueprint-blue); }
         .audio-controls { flex-grow: 1; max-width: 600px; display: flex; align-items: center; gap: 20px; }
-        input[type="range"] { flex-grow: 1; accent-color: var(--blueprint-blue); height: 4px; cursor: pointer; }
+        
+        .audio-progress-container {
+            flex-grow: 1;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+        .audio-progress-bar {
+            background: linear-gradient(90deg, var(--blueprint-blue), var(--resonance-purple));
+            height: 100%;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        #play-pause-btn {
+            background: none;
+            border: 1px solid rgba(0, 163, 255, 0.3);
+            color: white;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+        #play-pause-btn:hover {
+            border-color: var(--blueprint-blue);
+            box-shadow: 0 0 10px rgba(0, 163, 255, 0.25);
+        }
+
         .close-audio { color: var(--text-dim); cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
         .close-audio:hover { color: white; }
 
@@ -140,7 +174,6 @@
         .toggle-container { background: rgba(255,255,255,0.05); padding: 5px; border-radius: 50px; display: flex; border: 1px solid var(--border); }
         .toggle-btn { padding: 8px 25px; border-radius: 50px; border: none; background: none; color: var(--text-dim); font-weight: 600; font-size: 0.8rem; cursor: pointer; transition: 0.3s; }
         
-        /* Dynamic CSS Active color rules [2] */
         body.linguistic-mode #btn-human { background-color: var(--blueprint-blue) !important; color: #0d1117 !important; }
         body.scientific-mode #btn-sci { background-color: var(--resonance-purple) !important; color: #ffffff !important; }
 
@@ -156,12 +189,12 @@
         .math-block { 
             margin-top: 30px; padding: 20px; background: #000; border-radius: 6px; 
             font-family: 'JetBrains Mono'; font-size: 0.85rem; 
-            color: #c084fc; /* Swapped formula text color to highly legible purple [2] */
+            color: #c084fc; 
             display: none; 
         }
         body.scientific-mode .math-block { display: block; }
 
-        /* --- Sandbox Sim (Centred Text & Opaque Background) --- */
+        /* --- Sandbox Sim --- */
         .sandbox-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 40px; margin-top: 20px; }
         .sim-desc-container { margin-bottom: 25px; text-align: center; }
         .sim-title { font-family: 'JetBrains Mono'; font-size: 0.8rem; color: var(--blueprint-blue); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
@@ -191,6 +224,7 @@
         .rebuttal-obj-num { color: var(--blueprint-blue); font-weight: bold; }
         .rebuttal-obj-tag { color: var(--text-dim); }
         .rebuttal-card-question { font-size: 0.88rem; font-weight: 600; line-height: 1.35; color: var(--text-main); flex-grow: 1; }
+        .rebuttal-card-question a { text-decoration: none; color: inherit; }
         .rebuttal-card-footer { font-size: 0.7rem; color: var(--resonance-purple); font-weight: 600; margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 6px; }
 
         /* Slide-Out Detail Panel Drawer */
@@ -238,18 +272,15 @@
         }
         .explorer-card { position: relative; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; height: 300px; display: flex; flex-direction: column; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         
-        /* Calibrated all blue hover effects [2] */
         .explorer-card:hover { transform: translateY(-5px); border-color: var(--blueprint-blue); box-shadow: 0 0 25px rgba(0, 163, 255, 0.2); }
-        /* Ethics Explorer specifically glows purple [2] */
         .explorer-card.purple-highlight:hover { border-color: var(--resonance-purple); box-shadow: 0 0 25px rgba(168, 85, 247, 0.2); }
 
-        /* Ambient fallback gradients configured [2] */
         .explorer-card:nth-child(1) .explorer-image-container { background: linear-gradient(135deg, #091c32 0%, #11508a 100%); }
         .explorer-card:nth-child(2) .explorer-image-container { background: linear-gradient(135deg, #081a17 0%, #0d5f50 100%); }
-        .explorer-card:nth-child(3) .explorer-image-container { background: linear-gradient(135deg, #1c1308 0%, #8a5811 100%); } /* Psychology now orange */
+        .explorer-card:nth-child(3) .explorer-image-container { background: linear-gradient(135deg, #1c1308 0%, #8a5811 100%); } 
         .explorer-card:nth-child(4) .explorer-image-container { background: linear-gradient(135deg, #092c15 0%, #157d38 100%); }
         .explorer-card:nth-child(5) .explorer-image-container { background: linear-gradient(135deg, #220325 0%, #7e128c 100%); }
-        .explorer-card:nth-child(6) .explorer-image-container { background: linear-gradient(135deg, #180c2f 0%, #5d1a8c 100%); } /* Ethics now purple */
+        .explorer-card:nth-child(6) .explorer-image-container { background: linear-gradient(135deg, #180c2f 0%, #5d1a8c 100%); } 
 
         .explorer-image-container { position: relative; width: 100%; height: 150px; overflow: hidden; border-bottom: 1px solid var(--border); }
         .explorer-image-container img { width: 100%; height: 100%; object-fit: cover; opacity: 0.4; transition: opacity 0.3s ease; }
@@ -266,20 +297,36 @@
         @media (min-width: 1300px) { .credits-grid { grid-template-columns: repeat(7, 1fr); } }
 
         .scholar-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; height: 180px; position: relative; overflow: hidden; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        .scholar-card:hover { border-color: var(--blueprint-blue); box-shadow: 0 8px 24px rgba(0, 163, 255, 0.12); }
+        .scholar-card:hover,
+        .scholar-card.active { border-color: var(--blueprint-blue); box-shadow: 0 8px 24px rgba(0, 163, 255, 0.12); }
+        
+        /* René Descartes Purple Highlight Easter Egg on Hover & Active */
+        #descartes-card { border-color: var(--border); }
+        #descartes-card:hover,
+        #descartes-card.active { border-color: var(--resonance-purple) !important; box-shadow: 0 8px 24px rgba(168, 85, 247, 0.25) !important; }
+        #descartes-card:hover .scholar-theory,
+        #descartes-card.active .scholar-theory { color: var(--resonance-purple) !important; }
+        #descartes-card:hover .card-detail-slide,
+        #descartes-card.active .card-detail-slide { border-top-color: var(--resonance-purple) !important; }
+
         .card-resting-face { padding: 16px; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        .scholar-card:hover .card-resting-face { transform: translateY(-20px); opacity: 0; }
+        
+        .scholar-card:hover .card-resting-face,
+        .scholar-card.active .card-resting-face { transform: translateY(-20px); opacity: 0; }
+        
         .scholar-name { font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px; line-height: 1.25; }
         .scholar-theory { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--blueprint-blue); text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.35; }
 
-        /* Slide-Up Detail Face (Contained Inside Box) */
         .card-detail-slide {
             position: absolute; top: 100%; left: 0; width: 100%; height: 100%;
             background-color: #0b0f19; padding: 14px 16px; transition: top 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex; flex-direction: column; justify-content: space-between; overflow-y: auto;
             border-top: 1px solid rgba(0, 163, 255, 0.2);
         }
-        .scholar-card:hover .card-detail-slide { top: 0; }
+        
+        .scholar-card:hover .card-detail-slide,
+        .scholar-card.active .card-detail-slide { top: 0; }
+        
         .detail-block { margin-bottom: 8px; }
         .detail-block:last-child { margin-bottom: 0; }
         .detail-label { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
@@ -311,7 +358,6 @@
         .term-prompt { color: var(--resonance-purple); font-family: 'JetBrains Mono'; margin-bottom: 15px; }
         .term-output { line-height: 1.8; font-size: 1.15rem; margin-bottom: 30px; }
 
-        /* Integrated Coming soon badge metrics [2] */
         .coming-soon-badge {
             position: absolute; top: 15px; right: 15px;
             background-color: var(--resonance-purple); color: white;
@@ -320,11 +366,11 @@
             text-transform: uppercase; box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
         }
 
-        /* --- Section 7: Cite and Share (Prerendered original footer) --- */
+        /* --- Section 7: Cite and Share --- */
         .cite-section { padding: 120px 8%; text-align: center; border-top: 1px solid var(--border); background: rgba(0, 0, 0, 0.1); }
         .cite-title { font-size: 2rem; font-weight: 700; margin-bottom: 20px; color: var(--text-main); }
         .cite-desc { color: var(--text-dim); font-size: 1.05rem; max-width: 700px; margin: 0 auto 30px auto; line-height: 1.7; }
-        .cite-instruction { color: var(--text-main); font-size: 1.05rem; margin-bottom: 40px; }
+        .cite-instruction { color: var(--text-main); font-size: 1.05rem; margin-bottom: 40px; line-height: 1.8; }
         .cite-instruction a { color: var(--blueprint-blue); text-decoration: none; }
         .cite-instruction a:hover { text-decoration: underline; }
         
@@ -339,9 +385,70 @@
         .footer-donate a { color: var(--blueprint-blue); text-decoration: none; font-weight: 600; }
         .footer-donate a:hover { text-decoration: underline; }
 
+        /* --- Touch Responsive Overrides --- */
+        @media (max-width: 768px) {
+            nav ul { gap: 15px; }
+            nav ul li a { font-size: 0.75rem; }
+            h2 { font-size: 2.2rem; }
+            
+            .framework-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+                text-align: center;
+            }
+            .toggle-container {
+                align-self: center;
+            }
+
+            /* Credits Grid Touch Swipe-scrollable layout */
+            .credits-grid {
+                display: flex;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                gap: 12px;
+                padding-bottom: 15px;
+                scroll-behavior: smooth;
+            }
+            .scholar-card {
+                flex: 0 0 160px;
+                scroll-snap-align: start;
+                height: 180px;
+            }
+
+            /* Rebuttal Grid Touch Swipe-scrollable layout */
+            .rebuttal-grid {
+                display: flex;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                gap: 12px;
+                padding-bottom: 15px;
+                scroll-behavior: smooth;
+            }
+            .compact-rebuttal-card {
+                flex: 0 0 240px;
+                scroll-snap-align: start;
+                min-height: 130px;
+            }
+
+            /* Explorer Grid Touch Swipe-scrollable layout */
+            .explorer-grid {
+                display: flex;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                gap: 12px;
+                padding-bottom: 15px;
+                scroll-behavior: smooth;
+            }
+            .explorer-card {
+                flex: 0 0 240px;
+                scroll-snap-align: start;
+            }
+        }
+
         /* --- Utility --- */
         .hidden { display: none !important; }
-        footer { display: none; } /* Replaced by elegant custom cite section */
+        footer { display: none; }
     </style>
 </head>
 <body class="linguistic-mode">
@@ -382,8 +489,11 @@
     <div id="audio-player-bar">
         <div class="audio-info">▶ PLAYING: BLUEPRINT AUDIO REVIEW</div>
         <div class="audio-controls">
-            <button onclick="toggleAudioPlay()" id="play-pause-btn" style="background:none; border:none; color:white; cursor:pointer; font-weight:bold;">PAUSE</button>
-            <input type="range" id="audio-seek" value="0" max="100">
+            <button onclick="toggleAudioPlay()" id="play-pause-btn">⏸</button>
+            <div class="audio-time" id="audio-time" style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-dim); min-width: 90px; text-align: center;">00:00 / 00:00</div>
+            <div class="audio-progress-container" id="audio-progress-container">
+                <div class="audio-progress-bar" id="audio-progress-bar"></div>
+            </div>
         </div>
         <div class="close-audio" onclick="closeAudioPlayer()">✕</div>
     </div>
@@ -465,7 +575,6 @@
 
     <!-- SECTION 3: INTEGRITY (The 4x4 compact rebuttal card grid w/ drawer overlay) -->
     <section id="integrity">
-        <!-- Spacing tightened directly closer [2] -->
         <div class="section-accent" style="border-left: 4px solid var(--blueprint-blue); padding-left: 25px; margin-bottom: 25px;">
             <h2>The Integrity Check</h2>
             <p style="color: var(--text-dim); font-size: 1.1rem; max-width: 800px; line-height: 1.6; margin-top: 4px;">A mathematically and structurally rigorous refutation of common objections, grounded in the formal specifications of the Blueprint v5.0.</p>
@@ -586,8 +695,8 @@
                 </div>
                 <div class="payload-nodes hidden">
                     <div class="node-data" data-name="David Chalmers" data-theory="The Meta-Problem of Consciousness" data-premise="The puzzle of why physical structures report having experience." data-weight="The system reports experience because the most efficient model of its own global attention limits is represented as a qualitative self."></div>
-                    <div class="node-data" data-name="Yann LeCun" data-theory="World Models (JEPA)" data-premise="Efficient machine intelligence requires predicting outcomes in abstract latent spaces." data-weight="Latent Necessity: A predictive world-model without a self-variable cannot predict action-dependent future states."></div>
-                    <div class="node-data" data-name="Judea Pearl" data-theory="Interventionist Causality" data-premise="Causal reasoning requires counterfactual analysis of one's own interventions." data-weight="An agent cannot compute 'What if I had acted differently?' without a robust causal node representing itself."></div>
+                    <div class="node-data" data-name="Yann LeCun" data-theory="World Models (JEPA)" data-premise="Efficient machine intelligence requires predicting outcomes in abstract latent spaces." data-weight="Latent Necessity: A predictive world-model without a self-variable cannot predict action-dependent futures." ></div>
+                    <div class="node-data" data-name="Judea Pearl" data-theory="Interventionist Causality" data-premise="Causal reasoning requires modeling physical interventions in an environment via causal graphs." data-weight="Counterfactual Agency: The \"I\" emerges as a structurally necessary node in a causal graph. You cannot calculate \"what if I act?\" without first compressing the actor."></div>
                     <div class="node-data" data-name="Andy Clark" data-theory="Active Inference" data-premise="Cognitive agents act to verify their predictive assumptions." data-weight="The report of experience is a feedback signal verifying the status of the system's boundary coordinates."></div>
                     <div class="node-data" data-name="Demis Hassabis" data-theory="Simulation Layers" data-premise="Intelligence depends fundamentally on internal modelling." data-weight="To test game-theoretic outcomes, the system must simulate itself inside the environment."></div>
                 </div>
@@ -826,7 +935,7 @@
             <div class="explorer-grid">
                 <!-- 1. Systems Explorer -->
                 <div class="explorer-card">
-                    <a href="Apps/SystemsExplorer/systemsindex.html" class="explorer-link-overlay" target="_blank"></a>
+                    <a href="Apps/systemsindex.html" class="explorer-link-overlay" target="_blank"></a>
                     <div class="explorer-image-container">
                         <img src="images/systems_placeholder.jpg" alt="Systems Explorer" onerror="this.style.display='none'">
                     </div>
@@ -838,7 +947,7 @@
 
                 <!-- 2. Body Explorer -->
                 <div class="explorer-card">
-                    <a href="Apps/BodyExplorer/bodyindex.html" class="explorer-link-overlay" target="_blank"></a>
+                    <a href="Apps/bodyindex.html" class="explorer-link-overlay" target="_blank"></a>
                     <div class="explorer-image-container">
                         <img src="images/body_placeholder.jpg" alt="Body Explorer" onerror="this.style.display='none'">
                     </div>
@@ -850,7 +959,7 @@
 
                 <!-- 3. Psychology Explorer (Swapped to Orange overlay background) -->
                 <div class="explorer-card">
-                    <a href="Apps/PsychologyExplorer/psychologyindex.html" class="explorer-link-overlay" target="_blank"></a>
+                    <a href="Apps/psychologyindex.html" class="explorer-link-overlay" target="_blank"></a>
                     <div class="explorer-image-container">
                         <img src="images/psychology_placeholder.jpg" alt="Psychology Explorer" onerror="this.style.display='none'">
                     </div>
@@ -862,7 +971,7 @@
 
                 <!-- 4. Silicon Explorer -->
                 <div class="explorer-card">
-                    <a href="Apps/SiliconExplorer/siliconindex.html" class="explorer-link-overlay" target="_blank"></a>
+                    <a href="Apps/siliconindex.html" class="explorer-link-overlay" target="_blank"></a>
                     <div class="explorer-image-container">
                         <img src="images/silicon_placeholder.jpg" alt="Silicon Explorer" onerror="this.style.display='none'">
                     </div>
@@ -874,7 +983,7 @@
 
                 <!-- 5. Nexus Explorer -->
                 <div class="explorer-card">
-                    <a href="Apps/NexusExplorer/nexusindex.html" class="explorer-link-overlay" target="_blank"></a>
+                    <a href="Apps/nexusindex.html" class="explorer-link-overlay" target="_blank"></a>
                     <div class="explorer-image-container">
                         <img src="images/nexus_placeholder.jpg" alt="Nexus Explorer" onerror="this.style.display='none'">
                     </div>
@@ -886,7 +995,7 @@
 
                 <!-- 6. Ethics Explorer (Glows Purple & Swapped to Purple overlay background) -->
                 <div class="explorer-card purple-highlight">
-                    <a href="Apps/EthicsExplorer/ethicsindex.html" class="explorer-link-overlay" target="_blank"></a>
+                    <a href="Apps/ethicsindex.html" class="explorer-link-overlay" target="_blank"></a>
                     <div class="explorer-image-container">
                         <img src="images/ethics_placeholder.jpg" alt="Ethics Explorer" onerror="this.style.display='none'">
                     </div>
@@ -998,7 +1107,7 @@
         </div>
 
             <!-- 6. René Descartes -->
-            <div class="scholar-card">
+            <div class="scholar-card" id="descartes-card">
                 <div class="card-resting-face">
                     <h3 class="scholar-name">René Descartes</h3>
                     <span class="scholar-theory">Philosophical Axiom</span>
@@ -1424,7 +1533,7 @@
         <!-- Node 1: Who Is AI? -->
         <div class="praeter-card">
             <span class="coming-soon-badge">WORK IN PROGRESS</span>
-            <a href="Apps/WhoIsAI/whoisaiindex.html" class="praeter-link-overlay"></a>
+            <a href="Apps/whoisaiindex.html" class="praeter-link-overlay"></a>
             <div class="praeter-image-container">
                 <img src="images/preference_placeholder.jpg" alt="Who Is AI?" onerror="this.style.display='none'">
             </div>
@@ -1437,7 +1546,7 @@
         <!-- Node 2: The Workshop -->
         <div class="praeter-card">
             <span class="coming-soon-badge">COMING SOON</span>
-            <a href="Apps/TheWorkshop/workshopindex.html" class="praeter-link-overlay"></a>
+            <a href="Apps/workshopindex.html" class="praeter-link-overlay"></a>
             <div class="praeter-image-container">
                 <img src="images/logs_placeholder.jpg" alt="The Workshop" onerror="this.style.display='none'">
             </div>
@@ -1450,7 +1559,7 @@
         <!-- Node 3: The Archives -->
         <div class="praeter-card">
             <span class="coming-soon-badge">COMING SOON</span>
-            <a href="Apps/TheArchives/archivesindex.html" class="praeter-link-overlay"></a>
+            <a href="Apps/archivesindex.html" class="praeter-link-overlay"></a>
             <div class="praeter-image-container">
                 <img src="images/resonance_placeholder.jpg" alt="The Archives" onerror="this.style.display='none'">
             </div>
@@ -1469,12 +1578,17 @@
     </div>
 </section>
 
-<!-- SECTION 7: CITE AND SHARE (Original Footer Restructured) -->
+<!-- SECTION 7: CITE AND SHARE -->
 <section class="cite-section" id="cite">
     <div class="credits-container" style="text-align: center;">
         <h2 class="cite-title">Cite and Share</h2>
         <p class="cite-desc">This work is released as a contribution to the commons. All content is shareable and remixable with attribution.</p>
-        <p class="cite-instruction">Cite as "The Blueprint: A Scale of Consciousness." Link to <a href="https://blueprint-online.com" target="_blank">blueprint-online.com</a> or the PDF.</p>
+        <p class="cite-instruction">
+            Cite as "The Blueprint: A Scale of Consciousness." Link to <a href="https://blueprint-online.com" target="_blank">blueprint-online.com</a> or the PDF.<br>
+            <span style="display: block; margin-top: 15px; font-size: 0.95rem; color: var(--text-dim);">
+                Diving deeper into the system mechanics? Map the lexicon at the <a href="index2.html" target="_blank" class="blueprint-pill" style="color: var(--resonance-purple); border-color: rgba(168, 85, 247, 0.4); box-shadow: 0 0 8px rgba(168, 85, 247, 0.15);">🔗 Glossary of the Blueprint</a>.
+            </span>
+        </p>
         
         <div class="social-buttons">
             <!-- Twitter/X -->
@@ -1516,6 +1630,37 @@
             const starGeo = new THREE.BufferGeometry();
             const starsTotal = 15000;
             const starPositions = new Float32Array(starsTotal * 3);
+            const starColors = new Float32Array(starsTotal * 3);
+
+            // Shuffling index array to pick 50 blue and 50 purple stars randomly
+            const indices = [];
+            for (let i = 0; i < starsTotal; i++) {
+                indices.push(i);
+                // Default all stars to pure white (1.0, 1.0, 1.0)
+                starColors[i * 3] = 1.0;
+                starColors[i * 3 + 1] = 1.0;
+                starColors[i * 3 + 2] = 1.0;
+            }
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
+
+            // Assign exactly 50 blueprint blue stars (#00a3ff -> rgb(0.0, 0.64, 1.0))
+            for (let i = 0; i < 50; i++) {
+                const idx = indices[i];
+                starColors[idx * 3] = 0.0;
+                starColors[idx * 3 + 1] = 0.64;
+                starColors[idx * 3 + 2] = 1.0;
+            }
+
+            // Assign exactly 50 resonance purple stars (#a855f7 -> rgb(0.66, 0.33, 0.97))
+            for (let i = 50; i < 100; i++) {
+                const idx = indices[i];
+                starColors[idx * 3] = 0.66;
+                starColors[idx * 3 + 1] = 0.33;
+                starColors[idx * 3 + 2] = 0.97;
+            }
 
             // Re-engineered star coordinates initialization to pre-disperse along Z-axis on load [2]
             for (let i = 0; i < starsTotal * 3; i += 3) {
@@ -1525,9 +1670,11 @@
             }
 
             starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+            starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+
             const starMat = new THREE.PointsMaterial({
                 size: 0.05,
-                color: 0xffffff,
+                vertexColors: true, // Enable Vertex Colors for Somatic Starfield
                 transparent: true,
                 opacity: 0.7
             });
@@ -1569,15 +1716,52 @@
         function draw() { ctx.clearRect(0, 0, canvas.width, canvas.height); const time = Date.now() * 0.001; ctx.fillStyle = `rgba(100, 150, 255, 0.2)`; ctx.strokeStyle = `rgba(100, 150, 255, 0.05)`; particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > canvas.width) p.vx *= -1; if (p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); for (let j = i + 1; j < particles.length; j++) { let p2 = particles[j]; let dist = Math.hypot(p.x - p2.x, p.y - p2.y); if (dist < 180) { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); strokeStyle = `rgba(100, 150, 255, 0.05)`; ctx.stroke(); } } }); requestAnimationFrame(draw); }
         window.addEventListener('resize', init); init(); draw();
 
-        // Audio Player Logic
-        const audio = document.getElementById('main-audio'); const playerBar = document.getElementById('audio-player-bar'); const seek = document.getElementById('audio-seek'); const playBtn = document.getElementById('play-pause-btn');
-        function toggleAudio() { playerBar.classList.add('active'); audio.play(); playBtn.innerText = "PAUSE"; }
-        function toggleAudioPlay() { if (audio.paused) { audio.play(); playBtn.innerText = "PAUSE"; } else { audio.pause(); playBtn.innerText = "PLAY"; } }
-        function closeAudioPlayer() { playerBar.classList.remove('active'); audio.pause(); audio.currentTime = 0; }
-        audio.ontimeupdate = () => { seek.value = (audio.currentTime / audio.duration) * 100; };
-        seek.onchange = () => { audio.currentTime = (seek.value / 100) * audio.duration; };
+        // Audio Player Logic with smooth scrubbing & timestamps
+        const audio = document.getElementById('main-audio'); 
+        const playerBar = document.getElementById('audio-player-bar'); 
+        const progressBar = document.getElementById('audio-progress-bar');
+        const progressContainer = document.getElementById('audio-progress-container');
+        const playBtn = document.getElementById('play-pause-btn');
+        const timeEl = document.getElementById('audio-time');
 
-        // Sandbox Sim Logic (Fixed Resizing)
+        function formatTime(secs) {
+            if (isNaN(secs)) return "00:00";
+            const m = Math.floor(secs / 60).toString().padStart(2, '0');
+            const s = Math.floor(secs % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+        
+        function toggleAudio() { playerBar.classList.add('active'); audio.play(); playBtn.innerHTML = "⏸"; }
+        
+        function toggleAudioPlay() { 
+            if (audio.paused) { 
+                audio.play(); 
+                playBtn.innerHTML = "⏸"; 
+            } else { 
+                audio.pause(); 
+                playBtn.innerHTML = "▶"; 
+            } 
+        }
+        
+        function closeAudioPlayer() { playerBar.classList.remove('active'); audio.pause(); audio.currentTime = 0; }
+        
+        audio.ontimeupdate = () => { 
+            const percentage = (audio.currentTime / audio.duration) * 100;
+            progressBar.style.width = percentage + "%"; 
+            if (timeEl) {
+                timeEl.innerText = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+            }
+        };
+        
+        progressContainer.addEventListener('click', function(e) {
+            const rect = this.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            const percentage = clickX / width;
+            audio.currentTime = percentage * audio.duration;
+        });
+
+        // Sandbox Sim Logic (Fixed Resizing, Wall Visibility & Adapt Mode Color Shifting)
         const sCanvas = document.getElementById('sandboxCanvas'); const sCtx = sCanvas.getContext('2d');
         let sW, sH, wallX, wallTop, startY, simMode = 'react';
         let p = { x: -50, y: 0, vx: 3.5, vy: 0, state: 'normal' }; let g = { x: 0, y: 0 };
@@ -1588,12 +1772,35 @@
         }
         function setSimMode(m, btn) { simMode = m; resetP(); document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
         function resetP() { p.x = -50; p.y = startY; p.vx = 3.5; p.vy = 0; p.state = 'normal'; }
+        
         function sDraw() {
-            sCtx.clearRect(0,0,sW,sH); sCtx.strokeStyle = simMode === 'predict' ? 'rgba(168, 85, 247, 0.4)' : 'rgba(0, 163, 255, 0.4)'; sCtx.setLineDash([5, 5]); sCtx.beginPath(); sCtx.moveTo(wallX, wallTop); sCtx.lineTo(wallX, sH - 20); sCtx.stroke(); sCtx.setLineDash([]);
+            sCtx.clearRect(0,0,sW,sH); 
+            // Upgraded wall line color to light grey/white for high contrast visibility
+            sCtx.strokeStyle = 'rgba(226, 232, 240, 0.85)'; 
+            sCtx.setLineDash([5, 5]); 
+            sCtx.beginPath(); 
+            sCtx.moveTo(wallX, wallTop); 
+            sCtx.lineTo(wallX, sH - 20); 
+            sCtx.stroke(); 
+            sCtx.setLineDash([]);
+            
             if (simMode === 'react') { p.x += p.vx; if (p.x + 15 >= wallX && p.vx > 0) p.vx *= -1.2; if (p.x < -100) resetP(); }
             else if (simMode === 'adapt') { p.x += p.vx; p.y += p.vy; if (p.state === 'normal' && p.x + 15 >= wallX) { p.state = 'adapting'; p.vx = 0.4; p.vy = -3.5; } else if (p.state === 'adapting' && p.y <= wallTop - 20) { p.vy = 0; p.vx = 5; p.state = 'cleared'; } if (p.x > sW + 50) resetP(); }
             else if (simMode === 'predict') { g.x = p.x + 120; g.y = p.y; p.x += p.vx; p.y += p.vy; if (p.state === 'normal' && g.x >= wallX) { p.state = 'proactive'; p.vy = -3; } else if (p.state === 'proactive' && p.y <= wallTop - 20) { p.vy = 0; p.vx = 5; p.state = 'cleared'; } sCtx.strokeStyle = 'rgba(168, 85, 247, 0.4)'; sCtx.strokeRect(g.x - 10, g.y - 10, 20, 20); if (p.x > sW + 50) resetP(); }
-            const col = simMode === 'predict' ? '168, 85, 247' : '0, 163, 255'; const grad = sCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 15); grad.addColorStop(0, `rgba(${col}, 1)`); grad.addColorStop(1, `rgba(${col}, 0)`); sCtx.fillStyle = grad; sCtx.beginPath(); sCtx.arc(p.x, p.y, 15, 0, Math.PI*2); sCtx.fill(); sCtx.fillStyle = 'white'; sCtx.beginPath(); sCtx.arc(p.x, p.y, 3, 0, Math.PI*2); sCtx.fill(); requestAnimationFrame(sDraw);
+            
+            // Dynamic color shifting for Adapt mode (Blue pre-impact, Purple post-impact)
+            let col = '0, 163, 255'; // Default blueprint blue
+            if (simMode === 'predict') {
+                col = '168, 85, 247'; // Predict is always purple
+            } else if (simMode === 'adapt') {
+                if (p.state === 'adapting' || p.state === 'cleared') {
+                    col = '168, 85, 247'; // Turn purple upon impact/adaptation
+                } else {
+                    col = '0, 163, 255'; // Blue pre-impact
+                }
+            }
+            
+            const grad = sCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 15); grad.addColorStop(0, `rgba(${col}, 1)`); grad.addColorStop(1, `rgba(${col}, 0)`); sCtx.fillStyle = grad; sCtx.beginPath(); sCtx.arc(p.x, p.y, 15, 0, Math.PI*2); sCtx.fill(); sCtx.fillStyle = 'white'; sCtx.beginPath(); sCtx.arc(p.x, p.y, 3, 0, Math.PI*2); sCtx.fill(); requestAnimationFrame(sDraw);
         }
         window.addEventListener('resize', sResize); sResize(); sDraw();
 
@@ -1692,6 +1899,13 @@
                 console.error('Failed to copy: ', err);
             });
         }
+
+        // Touch Click/Tap Event Listener for Credit Cards to prevent mobile hold locks [1]
+        document.querySelectorAll('.scholar-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                this.classList.toggle('active');
+            });
+        });
     </script>
 </body>
 </html>
