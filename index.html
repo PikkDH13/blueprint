@@ -37,51 +37,33 @@
 
         /* WebGL Background Canvas */
         #starfield {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -3;
-            pointer-events: none;
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: -3; pointer-events: none;
         }
 
         /* Central Vignette Star Blur */
         .starfield-blur-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -2;
-            pointer-events: none;
-            backdrop-filter: blur(12px);
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh; z-index: -2;
+            pointer-events: none; backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 75%);
             -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 75%);
         }
 
         #particle-canvas {
-            position: fixed;
-            top: 0; left: 0;
+            position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: -1;
-            opacity: 0.5;
+            z-index: -1; opacity: 0.5;
         }
 
         /* --- Navigation --- */
         nav {
-            position: fixed;
-            top: 0; width: 100%;
-            padding: 20px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            background: var(--nav-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
+            position: fixed; top: 0; width: 100%; padding: 20px 5%;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 1000; background: var(--nav-bg); backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);
         }
         .logo { font-weight: 700; color: var(--blueprint-blue); font-size: 0.9rem; letter-spacing: 1px; display: inline-block; }
         .logo-mobile { display: none; }
@@ -92,13 +74,9 @@
 
         /* --- Hero Section --- */
         header {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 0 20px;
+            height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            text-align: center; padding: 0 20px;
         }
         .axiom-tag { color: var(--blueprint-blue); text-transform: uppercase; letter-spacing: 5px; font-size: 0.8rem; margin-bottom: 30px; font-weight: 600; }
         h1 { font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; max-width: 1100px; line-height: 1.1; margin-bottom: 40px; letter-spacing: -2px; }
@@ -128,35 +106,22 @@
         .audio-controls { flex-grow: 1; max-width: 600px; display: flex; align-items: center; gap: 20px; }
         
         .audio-progress-container {
-            flex-grow: 1;
-            height: 10px;
+            flex-grow: 1; height: 10px;
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-radius: 5px;
-            overflow: hidden;
-            position: relative;
-            cursor: pointer;
+            border: 1px solid var(--border); border-radius: 5px;
+            overflow: hidden; position: relative; cursor: pointer;
         }
         .audio-progress-bar {
             background: linear-gradient(90deg, var(--blueprint-blue), var(--resonance-purple));
-            height: 100%;
-            width: 0%;
-            transition: width 0.1s linear;
+            height: 100%; width: 0%; transition: width 0.1s linear;
         }
 
         #play-pause-btn {
-            background: none;
-            border: 1px solid rgba(0, 163, 255, 0.3);
-            color: white;
-            cursor: pointer;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-            transition: 0.2s;
+            background: none; border: 1px solid rgba(0, 163, 255, 0.3);
+            color: white; cursor: pointer; border-radius: 50%;
+            width: 36px; height: 36px; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 0.9rem; transition: 0.2s;
         }
         #play-pause-btn:hover {
             border-color: var(--blueprint-blue);
@@ -190,9 +155,7 @@
         
         .math-block { 
             margin-top: 30px; padding: 20px; background: #000; border-radius: 6px; 
-            font-family: 'JetBrains Mono'; font-size: 0.85rem; 
-            color: #c084fc; 
-            display: none; 
+            font-family: 'JetBrains Mono'; font-size: 0.85rem; color: #c084fc; display: none; 
         }
         body.scientific-mode .math-block { display: block; }
 
@@ -465,20 +428,30 @@
                 font-size: 0.7rem;
             }
 
-            /* Thinner, Snug swipe-scrollable Rebuttal Cards with Mac Dock scale effects */
+            /* Overwrite Framework Cards height/padding & line-height on Mobile */
+            .stage-card {
+                padding: 16px !important;
+            }
+            .stage-content {
+                font-size: 0.92rem !important;
+                line-height: 1.45 !important; /* Compressed from 1.8 to prevent bloating height */
+            }
+            .math-block {
+                margin-top: 15px !important;
+                padding: 12px !important;
+            }
+
+            /* Stack Rebuttal Cards vertically as clean full-width horizontal boxes */
             .rebuttal-grid {
-                display: flex;
-                overflow-x: auto;
-                scroll-snap-type: x mandatory;
-                gap: 12px;
-                padding-bottom: 15px;
-                scroll-behavior: smooth;
-                border: none;
+                display: flex !important;
+                flex-direction: column !important; /* Stack vertically going down */
+                gap: 12px !important;
+                overflow-x: visible !important; /* Remove horizontal swipe track completely */
             }
             .compact-rebuttal-card {
-                flex: 0 0 185px !important; /* Thin and compact width */
-                scroll-snap-align: center;
-                min-height: 110px !important; /* Snug height */
+                flex: none !important;
+                width: 100% !important; /* Force full width horizontal layout */
+                min-height: 110px !important; /* SNUG and compact height */
                 padding: 10px 12px !important; /* Tight internal padding */
                 transition: transform 0.4s ease, opacity 0.4s ease;
             }
@@ -661,7 +634,7 @@
     <audio id="main-audio" src="audio/audioreview.mp3"></audio>
 
     <nav>
-        <a href="#axiom" class="logo" style="text-decoration: none; color: inherit;">
+        <a href="#axiom" class="logo" style="text-decoration: none; color: var(--blueprint-blue);">
             <span class="logo-desktop">THE BLUEPRINT</span>
             <span class="logo-mobile">BLUE<br>PRINT</span>
         </a>
@@ -775,7 +748,7 @@
         </div>
     </section>
 
-    <!-- SECTION 3: INTEGRITY (The 4x4 compact rebuttal card grid w/ drawer overlay) -->
+    <!-- SECTION 3: INTEGRITY (Integrity Check) -->
     <section id="integrity">
         <div class="section-accent">
             <h2>Integrity Check</h2>
@@ -1163,7 +1136,7 @@
                     </div>
                 </div>
 
-                <!-- 3. Psychology Explorer -->
+                <!-- 3. Psychology Explorer (Swapped to Orange overlay background) -->
                 <div class="explorer-card">
                     <a href="Apps/psychologyindex.html" class="explorer-link-overlay" target="_blank"></a>
                     <div class="explorer-image-container">
@@ -1403,7 +1376,7 @@
                     <div class="scholar-detail-header">Anil Seth</div>
                     <div class="detail-block">
                         <h4 class="detail-label focus-label">Theoretical Focus</h4>
-                        <p class="detail-text">Perception is prediction constrained by sensory input.</p>
+                        <p class="detail-text">Preception is prediction constrained by sensory input.</p>
                     </div>
                     <div class="detail-block">
                         <h4 class="detail-label weight-label">The Blueprint Weight</h4>
@@ -1673,7 +1646,7 @@
                 </div>
                 <div class="detail-block">
                     <h4 class="detail-label weight-label">The Blueprint Weight</h4>
-                    <p class="detail-text">Counterfactual Agency: The \"I\" emerges as a structurally necessary node in a causal graph. You cannot calculate \"what if I act?\" without first compressing the actor.</p>
+                    <p class="detail-text">Counterfactual Agency: The "I" emerges as a structurally necessary node in a causal graph. You cannot calculate "what if I act?" without first compressing the actor.</p>
                 </div>
             </div>
         </div>
