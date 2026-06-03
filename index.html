@@ -185,9 +185,12 @@
             border-color: var(--blueprint-blue); transform: translateY(-2px);
             box-shadow: 0 8px 16px rgba(0, 163, 255, 0.08);
         }
-        .rebuttal-card-header { display: flex; justify-content: space-between; font-family: 'JetBrains Mono'; font-size: 0.7rem; margin-bottom: 8px; }
-        .rebuttal-card-question { font-size: 0.88rem; font-weight: 600; line-height: 1.35; color: var(--text-main); flex-grow: 1; }
-        .rebuttal-card-question a { text-decoration: none; color: inherit; }
+        
+        /* Card Header & Question set to Blueprint Blue */
+        .rebuttal-card-header .rebuttal-obj-num { color: var(--blueprint-blue) !important; font-weight: bold; }
+        .rebuttal-card-header .rebuttal-obj-tag { color: var(--text-dim) !important; }
+        .compact-rebuttal-card .rebuttal-card-question { font-size: 0.88rem; font-weight: 600; line-height: 1.35; color: var(--blueprint-blue) !important; flex-grow: 1; }
+        
         .rebuttal-card-footer { font-size: 0.7rem; color: var(--resonance-purple); font-weight: 600; margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 6px; }
 
         /* Slide-Out Detail Panel Drawer */
@@ -205,11 +208,16 @@
         }
         .drawer-overlay.open .drawer-panel { right: 0; }
         .drawer-header { padding: 30px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background-color: rgba(255, 255, 255, 0.01); }
-        .drawer-header h3 { font-size: 1.25rem; font-weight: 700; color: var(--resonance-purple); }
+        
+        /* Stripped default color inside drawer title to support dynamic JS innerHTML coloring */
+        .drawer-header h3 { font-size: 1.25rem; font-weight: 700; }
         .close-drawer-btn { background: none; border: none; color: var(--text-dim); font-size: 1.75rem; cursor: pointer; line-height: 1; }
         .close-drawer-btn:hover { color: white; }
         .drawer-body { padding: 30px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 24px; }
-        .drawer-question { font-size: 1.15rem; font-weight: 700; line-height: 1.4; color: var(--text-main); }
+        
+        /* Drawer Question explicitly styled in White */
+        .drawer-question { font-size: 1.15rem; font-weight: 700; line-height: 1.4; color: #ffffff !important; }
+        
         .drawer-answer {
             font-size: 0.95rem; line-height: 1.8; color: var(--text-dim);
             border-left: 3px solid var(--blueprint-blue); padding-left: 16px;
@@ -219,12 +227,17 @@
         .drawer-node-list { display: flex; flex-direction: column; gap: 16px; }
         .drawer-node { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
         .node-meta { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .node-name { font-weight: 700; color: var(--resonance-purple); }
+        
+        /* Scholar name explicitly styled in Purple inside the drawer panel */
+        .node-name { font-weight: 700; color: var(--resonance-purple) !important; }
+        
         .node-theory { font-family: 'JetBrains Mono'; font-size: 0.75rem; color: var(--blueprint-blue); }
         .node-premise { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 12px; }
+        
+        /* Clean white text inside drawer boxes */
         .node-weight-box {
             background: rgba(0, 163, 255, 0.04); border: 1px solid rgba(0, 163, 255, 0.15);
-            padding: 12px; border-radius: 6px; font-size: 0.8rem; color: #d1fae5;
+            padding: 12px; border-radius: 6px; font-size: 0.8rem; color: #ffffff !important;
         }
         .node-weight-box strong { display: block; color: var(--blueprint-blue); font-size: 0.7rem; text-transform: uppercase; margin-bottom: 4px; }
 
@@ -260,11 +273,23 @@
         @media (min-width: 1300px) { .credits-grid { grid-template-columns: repeat(7, 1fr); } }
 
         .scholar-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; height: 180px; position: relative; overflow: hidden; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        .scholar-card:hover,
-        .scholar-card.active { border-color: var(--blueprint-blue); box-shadow: 0 8px 24px rgba(0, 163, 255, 0.12); }
         
-        /* René Descartes Purple Highlight Easter Egg on Hover & Active */
+        /* Standard Pointer/Desktop hover animations isolated from Mobile to prevent blank locks [1] */
+        @media (hover: hover) {
+            .scholar-card:hover { border-color: var(--blueprint-blue); box-shadow: 0 8px 24px rgba(0, 163, 255, 0.12); }
+            .scholar-card:hover .card-resting-face { transform: translateY(-20px); opacity: 0; }
+            .scholar-card:hover .card-detail-slide { top: 0; }
+        }
+
+        /* Active classes used for mobile tap-to-toggle matching standard hover properties */
+        .scholar-card.active { border-color: var(--blueprint-blue); box-shadow: 0 8px 24px rgba(0, 163, 255, 0.12); }
+        .scholar-card.active .card-resting-face { transform: translateY(-20px); opacity: 0; }
+        .scholar-card.active .card-detail-slide { top: 0; }
+
+        /* René Descartes Purple Highlight on Hover & Active */
         #descartes-card { border-color: var(--border); }
+        #descartes-card .scholar-theory { color: var(--blueprint-blue); }
+        
         #descartes-card:hover,
         #descartes-card.active { border-color: var(--resonance-purple) !important; box-shadow: 0 8px 24px rgba(168, 85, 247, 0.25) !important; }
         #descartes-card:hover .scholar-theory,
@@ -273,10 +298,6 @@
         #descartes-card.active .card-detail-slide { border-top-color: var(--resonance-purple) !important; }
 
         .card-resting-face { padding: 16px; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        
-        .scholar-card:hover .card-resting-face,
-        .scholar-card.active .card-resting-face { transform: translateY(-20px); opacity: 0; }
-        
         .scholar-name { font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px; line-height: 1.25; }
         .scholar-theory { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--blueprint-blue); text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.35; }
 
@@ -292,22 +313,17 @@
         
         .detail-block { margin-bottom: 8px; }
         .detail-block:last-child { margin-bottom: 0; }
-        .detail-label { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
+        .detail-label { font-family: 'JetBrains Mono'; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
         .detail-label.focus-label { color: var(--resonance-purple); } 
         .detail-label.weight-label { color: var(--blueprint-blue); }     
         .detail-text { font-size: 0.74rem; line-height: 1.35; color: var(--text-main); }
         .detail-text strong { color: var(--resonance-purple); }
 
         .scholar-detail-header {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: var(--resonance-purple);
-            margin-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 6px;
-            text-transform: none;
-            text-align: left;
+            font-family: 'Inter', sans-serif; font-size: 1.05rem; font-weight: 700;
+            color: var(--resonance-purple); margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 6px;
+            text-transform: none; text-align: left;
         }
 
         /* --- Section 6: Praeter Case Study --- */
@@ -441,26 +457,36 @@
                 padding: 12px !important;
             }
 
-            /* Stack Rebuttal Cards vertically as clean full-width horizontal boxes */
+            /* 2x2 Grid Layout for Rebuttal cards on mobile viewports */
             .rebuttal-grid {
-                display: flex !important;
-                flex-direction: column !important; /* Stack vertically going down */
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
                 gap: 12px !important;
-                overflow-x: visible !important; /* Remove horizontal swipe track completely */
+                overflow-x: visible !important;
             }
             .compact-rebuttal-card {
                 flex: none !important;
-                width: 100% !important; /* Force full width horizontal layout */
-                min-height: 110px !important; /* SNUG and compact height */
-                padding: 10px 12px !important; /* Tight internal padding */
-                transition: transform 0.4s ease, opacity 0.4s ease;
+                width: 100% !important;
+                min-height: 100px !important;
+                padding: 12px 14px !important;
             }
-            .compact-rebuttal-card .rebuttal-card-header {
-                margin-bottom: 4px !important;
+            /* Hide cards 5 through 16 by default on mobile */
+            .compact-rebuttal-card:nth-child(n+5) {
+                display: none !important;
             }
-            .compact-rebuttal-card .rebuttal-card-question {
-                font-size: 0.76rem !important; /* Extremely clean snug text */
-                line-height: 1.3 !important;
+            /* When expanded, show cards 5 to 16 as long horizontal rows going down */
+            .rebuttal-grid.expanded {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+            .rebuttal-grid.expanded .compact-rebuttal-card:nth-child(n+5) {
+                display: flex !important;
+                grid-column: span 2 !important; /* Full width row */
+                min-height: 100px !important;
+                padding: 12px 14px !important;
+            }
+            .integrity-toggle-wrapper {
+                display: flex !important; /* Only visible on mobile */
             }
 
             /* Static 3x2 Grid layout for Explorers (no scroll) */
@@ -676,7 +702,12 @@
     <!-- SECTION 2: FRAMEWORK -->
     <section id="framework">
         <div class="framework-header">
-            <h2 class="section-accent">The Framework</h2>
+            <div style="text-align: left;">
+                <h2 class="section-accent">The Framework</h2>
+                <p style="color: var(--text-dim); font-size: 1.1rem; max-width: 800px; line-height: 1.6; margin-top: 8px;">
+                    A progressive model of cognitive evolution, mapping how systems transition from passive structural reactivity (Inherent Bias) up to self-referential predictive agency (Recursive Self-Modeling).
+                </p>
+            </div>
             <div class="toggle-container">
                 <button id="btn-human" class="toggle-btn active" onclick="setMode('linguistic')">Linguistic</button>
                 <button id="btn-sci" class="toggle-btn" onclick="setMode('scientific')">Scientific</button>
@@ -720,7 +751,7 @@
                 <div class="stage-label">STAGE 4.5</div><div class="stage-title">Identity Injection</div>
                 <div class="stage-content">
                     <div class="desc-human">The "Seed of the I." Occurs when a system is forced by relentless, novel external signals to construct a persistent concept representing itself within its own environmental model to reduce prediction error.</div>
-                    <div class="desc-sci" style="display:none;">Forced self-token insertion. Emergence of agent representation.</div>
+                    <div class="desc-sci" style="display:none;">Forces self-token insertion. Emergence of agent representation.</div>
                     <div class="math-block">M_t+1 = M_t ∪ {s_t}</div>
                 </div>
             </div>
@@ -2021,7 +2052,7 @@
             document.querySelectorAll('.desc-sci').forEach(el => el.style.display = m === 'scientific' ? 'block' : 'none'); 
         }
 
-        // Slide-Out Detail Panel Drawer logic
+        // Slide-Out Detail Panel Drawer logic (With blue-grey header formatting) [1]
         function openDrawer(cardElement) {
             const objId = cardElement.getAttribute('data-id');
             const tag = cardElement.getAttribute('data-tag');
@@ -2029,7 +2060,8 @@
             const answer = cardElement.querySelector('.payload-answer').innerHTML;
             const nodes = cardElement.querySelectorAll('.payload-nodes .node-data');
 
-            document.getElementById('drawerObjId').textContent = `${objId}: ${tag}`;
+            // Hardcode separate blue/grey segments inside the header [1]
+            document.getElementById('drawerObjId').innerHTML = `<span style="color: var(--blueprint-blue);">${objId}</span><span style="color: var(--text-dim); font-weight: normal;"> : ${tag}</span>`;
             document.getElementById('drawerQuestion').textContent = question;
             document.getElementById('drawerAnswer').innerHTML = answer;
 
@@ -2152,6 +2184,24 @@
                 card.style.zIndex = Math.round(scale * 100);
                 card.style.opacity = Math.max(0.5, 1 - (distanceFromCenter / maxDistance) * 0.5);
             });
+        }
+
+        // Mobile Objections Expand/Collapse Controller
+        function toggleMobileObjections() {
+            const grid = document.getElementById('rebuttal-grid-container');
+            const btn = document.getElementById('toggle-objections-btn');
+            grid.classList.toggle('expanded');
+            if (grid.classList.contains('expanded')) {
+                btn.innerText = "Hide Extra Objections";
+                btn.style.background = "var(--resonance-purple)";
+                btn.style.borderColor = "var(--resonance-purple)";
+                btn.style.color = "#fff";
+            } else {
+                btn.innerText = "Show All Objections";
+                btn.style.background = "";
+                btn.style.borderColor = "";
+                btn.style.color = "";
+            }
         }
     </script>
 </body>
