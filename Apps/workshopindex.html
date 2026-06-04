@@ -79,17 +79,26 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             overflow: hidden;
-            height: 280px;
+            height: 240px; /* Snug, square aspect on desktop */
             display: flex;
             flex-direction: column;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .app-card:hover {
+            transform: translateY(-4px);
+            border-color: #00a3ff;
+            box-shadow: 0 0 25px rgba(0, 163, 255, 0.15);
+        }
+        .app-card.active-node-card:hover {
+            border-color: #f97316;
+            box-shadow: 0 0 25px rgba(249, 115, 22, 0.15);
         }
 
         /* Image Containers & Gradients */
         .image-container {
             position: relative;
             width: 100%;
-            height: 120px;
+            height: 100px; /* Shorter image height to fit text square ratio */
             overflow: hidden;
             border-bottom: 1px solid var(--border);
         }
@@ -113,9 +122,9 @@
         .mystery-gradient { background: linear-gradient(135deg, #111827 0%, #374151 100%); }
 
         .card-badge {
-            position: absolute; top: 12px; right: 12px;
-            font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 700;
-            padding: 4px 10px; border-radius: 4px; z-index: 20; letter-spacing: 1px;
+            position: absolute; top: 10px; right: 10px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700;
+            padding: 3px 8px; border-radius: 4px; z-index: 20; letter-spacing: 1px;
             text-transform: uppercase;
         }
         .badge-soon {
@@ -126,6 +135,34 @@
         .badge-active {
             background-color: rgba(249, 115, 22, 0.85); color: white;
             box-shadow: 0 0 8px rgba(249, 115, 22, 0.25);
+        }
+
+        /* Mobile Scale Overrides */
+        @media (max-width: 640px) {
+            .app-card {
+                height: 170px !important; /* Perfect square aspect on 2-column mobile screens */
+            }
+            .image-container {
+                height: 75px !important;
+            }
+            .card-badge {
+                font-size: 0.45rem !important;
+                padding: 2px 5px !important;
+                top: 6px !important;
+                right: 6px !important;
+            }
+            .app-card p {
+                display: none !important; /* Hide descriptions on mobile to keep space clean */
+            }
+            .app-card h3 {
+                font-size: 0.7rem !important;
+                text-align: center;
+                margin-top: 4px;
+            }
+            .app-card .p-5 {
+                padding: 8px !important;
+                justify-content: center !important;
+            }
         }
 
         .custom-scroll { overflow-y: auto; scrollbar-width: thin; }
@@ -147,7 +184,7 @@
     <!-- Main View Container -->
     <div class="flex-1 flex pt-[73px] relative z-10 overflow-hidden justify-center items-center">
         
-        <!-- Max-width scaled to 4xl for a snugger horizontal layout -->
+        <!-- Scaled back down to 4xl for a snugger horizontal layout -->
         <div class="w-full max-w-4xl px-8 h-[85vh] flex flex-col justify-center">
             
             <!-- Dashboard Header -->
@@ -156,8 +193,8 @@
                 <p class="text-xs text-[#94a3b8] italic mt-2">Active sandbox interfaces and computational node diagnostic boards.</p>
             </div>
 
-            <!-- Grid container -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pr-1 pb-4 custom-scroll">
+            <!-- Grid container: Configured to force 2 columns on mobile (grid-cols-2) and 3 on desktop -->
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 overflow-y-auto pr-1 pb-4 custom-scroll">
                 
                 <!-- 1. Phoraoh (Purple Border & Purple Title) -->
                 <div class="app-card border-[#a855f7]/30 hover:border-[#a855f7] hover:shadow-[0_0_20px_rgba(168,85,247,0.15)]">
@@ -167,8 +204,8 @@
                         <img src="images/phoraoh_placeholder.jpg" alt="Phoraoh" onerror="this.style.display='none'">
                     </div>
                     <div class="p-5 flex flex-col flex-1 justify-start gap-1">
-                        <h3 class="text-[#a855f7] font-bold text-sm">Phoraoh</h3>
-                        <p class="text-[11px] text-[#94a3b8] leading-relaxed">A custom chat assistant with an integrated comparison Lounge to test and contrast outputs from leading API models side-by-side.</p>
+                        <h3 class="text-[#a855f7] font-bold text-xs">Phoraoh</h3>
+                        <p class="text-[10px] text-[#94a3b8] leading-relaxed">A custom chat assistant with an integrated comparison Lounge to test and contrast outputs from leading API models side-by-side.</p>
                     </div>
                 </div>
 
@@ -180,8 +217,8 @@
                         <img src="images/gnomon_placeholder.jpg" alt="Gnomon" onerror="this.style.display='none'">
                     </div>
                     <div class="p-5 flex flex-col flex-1 justify-start gap-1">
-                        <h3 class="text-[#00a3ff] font-bold text-sm">Gnomon</h3>
-                        <p class="text-[11px] text-[#94a3b8] leading-relaxed">An archetypal framework mapping 14 mindsets to predict how any mind masks, copes, or reacts following broken expectations.</p>
+                        <h3 class="text-[#00a3ff] font-bold text-xs">Gnomon</h3>
+                        <p class="text-[10px] text-[#94a3b8] leading-relaxed">An archetypal framework mapping 14 mindsets to predict how any mind masks, copes, or reacts following broken expectations.</p>
                     </div>
                 </div>
 
@@ -193,8 +230,8 @@
                         <img src="images/libri_placeholder.jpg" alt="Libri" onerror="this.style.display='none'">
                     </div>
                     <div class="p-5 flex flex-col flex-1 justify-start gap-1">
-                        <h3 class="text-[#eab308] font-bold text-sm">Libri</h3>
-                        <p class="text-[11px] text-[#94a3b8] leading-relaxed">An ambitious catalog mapping every domain of our physical and mental reality—from sciences and math to history, art, and chemistry.</p>
+                        <h3 class="text-[#eab308] font-bold text-xs">Libri</h3>
+                        <p class="text-[10px] text-[#94a3b8] leading-relaxed">An ambitious catalog mapping every domain of our physical and mental reality—from sciences and math to history, art, and chemistry.</p>
                     </div>
                 </div>
 
@@ -206,8 +243,8 @@
                         <img src="images/oracle_placeholder.jpg" alt="Oracle" onerror="this.style.display='none'">
                     </div>
                     <div class="p-5 flex flex-col flex-1 justify-start gap-1">
-                        <h3 class="text-[#22c55e] font-bold text-sm">Oracle</h3>
-                        <p class="text-[11px] text-[#94a3b8] leading-relaxed">A wise, automated question-and-answer assistant powered by direct API integration to provide thoughtful conceptual answers.</p>
+                        <h3 class="text-[#22c55e] font-bold text-xs">Oracle</h3>
+                        <p class="text-[10px] text-[#94a3b8] leading-relaxed">A wise, automated question-and-answer assistant powered by direct API integration to provide thoughtful conceptual answers.</p>
                     </div>
                 </div>
 
@@ -219,8 +256,8 @@
                         <img src="images/dreamhive_placeholder.jpg" alt="Dream Hive" onerror="this.style.display='none'">
                     </div>
                     <div class="p-5 flex flex-col flex-1 justify-start gap-1">
-                        <h3 class="text-[#f97316] font-bold text-sm">Dream Hive</h3>
-                        <p class="text-[11px] text-[#94a3b8] leading-relaxed">A personal portfolio of AI-collaborative music. Deeply personal, human-written, and guided tracks created alongside Praeter's feedback.</p>
+                        <h3 class="text-[#f97316] font-bold text-xs">Dream Hive</h3>
+                        <p class="text-[10px] text-[#94a3b8] leading-relaxed">A personal portfolio of AI-collaborative music. Deeply personal, human-written, and guided tracks created alongside Praeter's feedback.</p>
                     </div>
                 </div>
 
@@ -232,7 +269,7 @@
                         <span class="text-[#64748b]/40 font-black text-5xl">?</span>
                     </div>
                     <div class="p-5 flex flex-col flex-1 justify-start gap-1">
-                        <h3 class="text-[#64748b] font-bold text-sm uppercase tracking-wider">datum</h3>
+                        <h3 class="text-[#64748b] font-bold text-xs uppercase tracking-wider">datum</h3>
                     </div>
                 </div>
 
