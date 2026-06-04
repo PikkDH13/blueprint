@@ -982,17 +982,25 @@
             // Get target card's category
             const category = targetCard.getAttribute('data-category');
             
-            // Find the matching filter button
-            const btnId = 'filter-' + category;
-            const btn = document.getElementById(btnId);
-            
-            // Activate the correct filter category so the card is visible
-            if (btn) {
-                filterGlossary(category, btn);
+            // Only trigger the category switch filter if we are on Desktop
+            if (window.innerWidth > 900) {
+                const btnId = 'filter-' + category;
+                const btn = document.getElementById(btnId);
+                
+                // Activate the correct filter category so the card is visible
+                if (btn) {
+                    filterGlossary(category, btn);
+                } else {
+                    // Fallback to "all" if button is not found
+                    const allBtn = document.getElementById('filter-all');
+                    if (allBtn) filterGlossary('all', allBtn);
+                }
             } else {
-                // Fallback to "all" if button is not found
+                // On mobile, programmatically force the filter to "All Terms" so no card is hidden
                 const allBtn = document.getElementById('filter-all');
-                if (allBtn) filterGlossary('all', allBtn);
+                if (allBtn) {
+                    filterGlossary('all', allBtn);
+                }
             }
 
             // Scroll the card smoothly to the top of the viewport (offset is handled by scroll-margin-top in CSS)
