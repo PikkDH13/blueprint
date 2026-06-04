@@ -278,6 +278,16 @@
         let allFiles = [];
         let pinnedFiles = JSON.parse(localStorage.getItem('pins')) || [];
 
+        // Helper: Deterministic string hashing to generate stable 0-1 metrics from file names
+        function seedFromString(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = (hash << 5) - hash + str.charCodeAt(i);
+                hash |= 0; // Force strict 32-bit signed integer coercion
+            }
+            return Math.abs(hash) / 2147483647;
+        }
+
         // Initialize Icons
         lucide.createIcons();
 
@@ -305,6 +315,7 @@
             lucide.createIcons();
         }
 
+        // Dynamic pin limit set to 10
         function togglePin(filename) {
             const index = pinnedFiles.indexOf(filename);
             if (index > -1) {
@@ -407,34 +418,56 @@
         let starP5 = null;
         function initStarField() {
             const container = document.getElementById('star-view-container');
+            const w = container.offsetWidth || 800;
+            const h = container.offsetHeight || 500;
+
             if(starP5) { 
-                starP5.resizeCanvas(container.offsetWidth, container.offsetHeight); 
+                starP5.resizeCanvas(w, h); 
+                if (starP5.rebuildStars) starP5.rebuildStars();
                 return; 
             }
+
             starP5 = new p5((p) => {
                 let stars = [];
-                p.setup = () => {
-                    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-                    canvas.parent('star-view-container');
+
+                p.rebuildStars = () => {
+                    stars = [];
                     for(let i=0; i<allFiles.length; i++) {
+                        let seedX = seedFromString(allFiles[i].name + "_coords_X");
+                        let seedY = seedFromString(allFiles[i].name + "_coords_Y");
+                        let seedColor = seedFromString(allFiles[i].name + "_element_hue");
+                        
                         stars.push({ 
-                            x: p.random(p.width * 0.05, p.width * 0.95), 
-                            y: p.random(p.height * 0.05, p.height * 0.95), 
+                            x: p.map(seedX, 0, 1, p.width * 0.08, p.width * 0.92), 
+                            y: p.map(seedY, 0, 1, p.height * 0.08, p.height * 0.92), 
                             name: allFiles[i].name, 
-                            r: p.random(4, 7), 
-                            t: p.random(100) 
+                            r: p.map(seedFromString(allFiles[i].name + "_volume_sz"), 0, 1, 4.5, 7), 
+                            t: seedColor * 100
                         });
                     }
                 };
+
+                p.setup = () => {
+                    const canvas = p.createCanvas(w, h);
+                    canvas.parent('star-view-container');
+                    p.rebuildStars();
+                };
+
                 p.draw = () => {
                     p.clear();
                     let hoveringAny = false;
+
+                    // Dynamic fallback if files are loaded after setup
+                    if (stars.length === 0 && allFiles.length > 0) {
+                        p.rebuildStars();
+                    }
+
                     stars.forEach(s => {
                         let tw = p.map(p.sin(p.frameCount * 0.04 + s.t), -1, 1, 0.4, 1);
                         let isHovered = p.dist(p.mouseX, p.mouseY, s.x, s.y) < 20;
                         p.noStroke();
                         
-                        // Map node colors to Blueprint Blue or Resonance Purple
+                        // Map node colors to Blueprint Blue or Resonance Purple based on seed
                         if (s.t > 50) {
                             p.fill(0, 163, 255, 255 * tw);
                         } else {
@@ -452,6 +485,7 @@
                     });
                     p.cursor(hoveringAny ? p.HAND : p.ARROW);
                 };
+
                 p.mousePressed = () => {
                     if (document.getElementById('tab-stars').classList.contains('hidden')) return;
                     stars.forEach(s => {
