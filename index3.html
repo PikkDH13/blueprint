@@ -61,11 +61,32 @@
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
         }
-        .logo { font-weight: 700; color: var(--resonance-purple); font-size: 0.9rem; letter-spacing: 1.5px; }
+        
+        /* Failsafe logo transition and animations */
+        .logo-failsafe { 
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700; 
+            color: var(--resonance-purple); 
+            font-size: 0.9rem; 
+            letter-spacing: 1.5px;
+            transition: transform 0.05s ease;
+        }
+        
+        @keyframes textShift {
+            0% { transform: translate(0, 0) skewX(0); }
+            33% { transform: translate(-4px, 2px) skewX(-10deg); color: #ef4444; text-shadow: 2px -1px 0 #00a3ff; }
+            66% { transform: translate(4px, -2px) skewX(10deg); color: #38bdf8; text-shadow: -2px 1px 0 #ef4444; }
+            100% { transform: translate(0, 0) skewX(0); }
+        }
+        .logo-failsafe.glitched {
+            animation: textShift 0.2s steps(2, end);
+            color: #ef4444 !important;
+        }
+
         .back-link { text-decoration: none; color: var(--text-dim); font-size: 0.8rem; font-family: 'JetBrains Mono'; transition: 0.3s; }
         .back-link:hover { color: var(--blueprint-blue); }
 
-        /* Content Container */
+        /* Content Container and Sketchy Glitch Animations */
         .coming-soon-box {
             text-align: center;
             max-width: 600px;
@@ -77,6 +98,37 @@
             z-index: 10;
             margin: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            transition: transform 0.05s ease, border-color 0.05s ease;
+        }
+
+        /* 1. General Choppy Glitch */
+        @keyframes sketchyShift {
+            0% { transform: translate(0, 0) skewX(0); }
+            20% { transform: translate(-15px, 8px) skewX(-4deg); filter: hue-rotate(90deg); }
+            40% { transform: translate(12px, -6px) skewX(5deg); }
+            60% { transform: translate(-5px, -2px) skewX(-1deg); }
+            80% { transform: translate(8px, 4px) skewX(2deg); filter: hue-rotate(180deg); }
+            100% { transform: translate(0, 0) skewX(0); }
+        }
+        .coming-soon-box.glitched {
+            animation: sketchyShift 0.3s steps(3, end);
+            border-color: rgba(239, 68, 68, 0.4) !important;
+        }
+
+        /* 2. Flicker Right Shift Glitch */
+        @keyframes flickerRightShift {
+            0% { transform: translate(0, 0); filter: none; }
+            15% { transform: translate(45px, -2px) skewX(2deg); filter: opacity(0.8) hue-rotate(-20deg); }
+            25% { transform: translate(0, 0); filter: none; }
+            40% { transform: translate(55px, 3px) skewY(-1deg); filter: opacity(0.5) contrast(1.4); }
+            55% { transform: translate(5px, 0); }
+            70% { transform: translate(50px, -1px); filter: brightness(1.2); }
+            85% { transform: translate(0, 0); filter: none; }
+            100% { transform: translate(0, 0); }
+        }
+        .coming-soon-box.flicker-right {
+            animation: flickerRightShift 0.4s steps(3, end);
+            border-color: rgba(0, 163, 255, 0.4) !important;
         }
 
         .status-badge {
@@ -153,8 +205,8 @@
 
     <!-- Nav -->
     <nav>
-        <!-- Logo set specifically to THE WORKSHOP in Purple -->
-        <div class="logo" style="color: var(--resonance-purple);">THE WORKSHOP</div>
+        <!-- Logo set to FAILSAFE in Purple -->
+        <div class="logo logo-failsafe">FAILSAFE</div>
         <!-- Pathway set back up two directories to the root index.html -->
         <a href="../index.html" class="back-link">← RETURN TO BLUEPRINT</a>
     </nav>
@@ -172,7 +224,7 @@
         <div class="terminal-readout">SYS_STATUS: LOADING_LIBRARIANS...</div>
     </div>
 
-    <!-- Background Neural Constellation Animation -->
+    <!-- Background Neural Constellation Animation & Glitch Loop Controllers -->
     <script>
         (function() {
             const canvas = document.getElementById('neural-canvas');
@@ -236,6 +288,54 @@
             window.addEventListener('resize', init);
             init();
             draw();
+
+            // Glitch Controllers
+            function triggerLogoGlitch() {
+                const logo = document.querySelector('.logo-failsafe');
+                if (logo) {
+                    logo.classList.add('glitched');
+                    setTimeout(() => {
+                        logo.classList.remove('glitched');
+                    }, 250); 
+                }
+                const nextTime = 22000 + Math.random() * 12000; // Trigger roughly every 22-34s
+                setTimeout(triggerLogoGlitch, nextTime);
+            }
+
+            function triggerBoxGlitch() {
+                const box = document.querySelector('.coming-soon-box');
+                if (box) {
+                    // Prevent standard glitch overlapping with the flicker-right glitch
+                    if (!box.classList.contains('flicker-right')) {
+                        box.classList.add('glitched');
+                        setTimeout(() => {
+                            box.classList.remove('glitched');
+                        }, 300); 
+                    }
+                }
+                const nextTime = 25000 + Math.random() * 15000; // Trigger roughly every 25-40s
+                setTimeout(triggerBoxGlitch, nextTime);
+            }
+
+            function triggerFlickerRightGlitch() {
+                const box = document.querySelector('.coming-soon-box');
+                if (box) {
+                    // Prevent flicker-right overlapping with standard glitch
+                    if (!box.classList.contains('glitched')) {
+                        box.classList.add('flicker-right');
+                        setTimeout(() => {
+                            box.classList.remove('flicker-right');
+                        }, 400); 
+                    }
+                }
+                const nextTime = 20000 + Math.random() * 5000; // Trigger strictly every 20-25s
+                setTimeout(triggerFlickerRightGlitch, nextTime);
+            }
+
+            // Initial Delayed Startup Loops
+            setTimeout(triggerLogoGlitch, 12000);
+            setTimeout(triggerBoxGlitch, 18000);
+            setTimeout(triggerFlickerRightGlitch, 24000); // Start flicker right loop
         })();
     </script>
 </body>
