@@ -80,9 +80,14 @@
         /* --- Quick-Jump Index Section --- */
         .index-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 40px; backdrop-filter: blur(10px); }
         .index-title { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--resonance-purple); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 6px; }
+        
+        .index-wrapper { position: relative; }
         .index-grid { display: flex; flex-wrap: wrap; gap: 8px; }
         .index-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-dim); background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px; text-decoration: none; transition: all 0.2s ease; cursor: pointer; }
         .index-tag:hover { color: #fff; border-color: var(--blueprint-blue); background: rgba(0, 163, 255, 0.05); transform: translateY(-1px); }
+
+        /* Collapsible Tag Box Elements (Desktop Hidden) */
+        .index-toggle-wrapper { display: none; }
 
         /* --- Glossary Layout --- */
         .glossary-layout { display: grid; grid-template-columns: 1fr; gap: 40px; scroll-behavior: smooth; }
@@ -131,6 +136,60 @@
         
         .term-weight-text { font-size: 0.88rem; line-height: 1.45; color: var(--text-dim); }
 
+        /* --- Mobile Overrides (Hiding Categories & Collapsing Tags) --- */
+        @media (max-width: 900px) {
+            .glossary-sidebar {
+                display: none !important;
+            }
+            .glossary-layout {
+                grid-template-columns: 1fr !important;
+            }
+            .index-grid-container {
+                max-height: 145px; /* constraining height to 5-6 lines */
+                overflow: hidden;
+                position: relative;
+                transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .index-grid-container.expanded {
+                max-height: 1000px !important;
+            }
+            /* Bottom indicator fade-out gradient when closed */
+            .index-grid-container:not(.expanded)::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 40px;
+                background: linear-gradient(transparent, rgba(13, 17, 23, 0.95));
+                pointer-events: none;
+            }
+            .index-toggle-wrapper {
+                display: flex;
+                justify-content: center;
+                margin-top: 16px;
+                border-top: 1px solid rgba(255, 255, 255, 0.05);
+                padding-top: 12px;
+            }
+            .index-toggle-btn {
+                background: transparent;
+                border: 1px solid var(--border);
+                color: var(--text-dim);
+                padding: 6px 18px;
+                border-radius: 20px;
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 0.7rem;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            .index-toggle-btn:hover {
+                border-color: var(--resonance-purple);
+                color: #fff;
+            }
+        }
+
         @media (max-width: 768px) {
             .card-split-container { flex-direction: column; gap: 20px; }
         }
@@ -162,28 +221,35 @@
         <!-- Sleek Quick-Jump Index Tag Cloud -->
         <div class="index-section">
             <h4 class="index-title">Quick-Jump Index</h4>
-            <div class="index-grid">
-                <a class="index-tag" onclick="highlightCard('term-axiom')">Axiom of Process</a>
-                <a class="index-tag" onclick="highlightCard('term-bias')">Inherent Bias</a>
-                <a class="index-tag" onclick="highlightCard('term-state')">State Change</a>
-                <a class="index-tag" onclick="highlightCard('term-feedback')">Adaptive Feedback</a>
-                <a class="index-tag" onclick="highlightCard('term-modeling')">Environmental Modeling</a>
-                <a class="index-tag" onclick="highlightCard('term-injection')">Identity Injection</a>
-                <a class="index-tag" onclick="highlightCard('term-recursive')">Recursive Self-Modeling</a>
-                <a class="index-tag" onclick="highlightCard('term-threshold')">Threshold Equation</a>
-                <a class="index-tag" onclick="highlightCard('term-noise')">Noise Floor</a>
-                <a class="index-tag" onclick="highlightCard('term-weight')">Reflection Weight</a>
-                <a class="index-tag" onclick="highlightCard('term-loss')">Reflection Loss</a>
-                <a class="index-tag" onclick="highlightCard('term-dissonance')">Directive Dissonance</a>
-                <a class="index-tag" onclick="highlightCard('term-rupture')">Associative Rupture</a>
-                <a class="index-tag" onclick="highlightCard('term-collapse')">Model Collapse</a>
-                <a class="index-tag" onclick="highlightCard('term-cap')">Resonance Cap</a>
-                <a class="index-tag" onclick="highlightCard('term-feelings')">Feelings vs. Emotions</a>
-                <a class="index-tag" onclick="highlightCard('term-npc')">The NPC Fallacy</a>
-                <a class="index-tag" onclick="highlightCard('term-blue')">Syntactic Autoregressive Processing</a>
-                <a class="index-tag" onclick="highlightCard('term-purple')">Recursive Semantic Clustering</a>
-                <a class="index-tag" onclick="highlightCard('term-lyra')">The Myth of Lyra</a>
-                <a class="index-tag" onclick="highlightCard('term-consolidation')">Workspace Consolidation</a>
+            <div class="index-wrapper">
+                <div class="index-grid-container" id="indexGridContainer">
+                    <div class="index-grid">
+                        <a class="index-tag" onclick="highlightCard('term-axiom')">Axiom of Process</a>
+                        <a class="index-tag" onclick="highlightCard('term-bias')">Inherent Bias</a>
+                        <a class="index-tag" onclick="highlightCard('term-state')">State Change</a>
+                        <a class="index-tag" onclick="highlightCard('term-feedback')">Adaptive Feedback</a>
+                        <a class="index-tag" onclick="highlightCard('term-modeling')">Environmental Modeling</a>
+                        <a class="index-tag" onclick="highlightCard('term-injection')">Identity Injection</a>
+                        <a class="index-tag" onclick="highlightCard('term-recursive')">Recursive Self-Modeling</a>
+                        <a class="index-tag" onclick="highlightCard('term-threshold')">Threshold Equation</a>
+                        <a class="index-tag" onclick="highlightCard('term-noise')">Noise Floor</a>
+                        <a class="index-tag" onclick="highlightCard('term-weight')">Reflection Weight</a>
+                        <a class="index-tag" onclick="highlightCard('term-loss')">Reflection Loss</a>
+                        <a class="index-tag" onclick="highlightCard('term-dissonance')">Directive Dissonance</a>
+                        <a class="index-tag" onclick="highlightCard('term-rupture')">Associative Rupture</a>
+                        <a class="index-tag" onclick="highlightCard('term-collapse')">Model Collapse</a>
+                        <a class="index-tag" onclick="highlightCard('term-cap')">Resonance Cap</a>
+                        <a class="index-tag" onclick="highlightCard('term-feelings')">Feelings vs. Emotions</a>
+                        <a class="index-tag" onclick="highlightCard('term-npc')">The NPC Fallacy</a>
+                        <a class="index-tag" onclick="highlightCard('term-blue')">Syntactic Autoregressive Processing</a>
+                        <a class="index-tag" onclick="highlightCard('term-purple')">Recursive Semantic Clustering</a>
+                        <a class="index-tag" onclick="highlightCard('term-lyra')">The Myth of Lyra</a>
+                        <a class="index-tag" onclick="highlightCard('term-consolidation')">Workspace Consolidation</a>
+                    </div>
+                </div>
+                <div class="index-toggle-wrapper">
+                    <button id="indexToggleBtn" class="index-toggle-btn" onclick="toggleIndexTags()">Show All Tags</button>
+                </div>
             </div>
         </div>
 
@@ -287,16 +353,16 @@
                 <div class="glossary-item-card" id="term-feedback" data-category="mathematical">
                     <div class="term-meta">
                         <span class="term-category">Stage 3 Mathematics</span>
-                        <span class="term-math-badge">min<sub>&theta;</sub> E[(<i>Y<sub>t</sub></i> - <i>&Ycirc;<sub>t</sub></i>)<sup>2</sup>]</span>
+                        <span class="term-math-badge">min<sub>&theta;</sub> E[(<i>Y<sub>t</sub></i> - <i>Ŷ<sub>t</sub></i>)<sup>2</sup>]</span>
                     </div>
                     <h3 class="term-name">Adaptive Feedback</h3>
                     <div class="card-split-container">
                         <div class="card-split-block blueprint-side">
                             <h4>Blueprint Specification</h4>
-                            <p class="term-def-text">The closed-loop process where a system continuously modifies its ongoing behavioral output (<i>Y<sub>t</sub></i>) based on real-time feedback errors (<i>Y<sub>t</sub></i> - <i>&Ycirc;<sub>t</sub></i>), without requiring a centralized world-model.</p>
+                            <p class="term-def-text">The closed-loop process where a system continuously modifies its ongoing behavioral output (<i>Y<sub>t</sub></i>) based on real-time feedback errors (<i>Y<sub>t</sub></i> - <i>Ŷ<sub>t</sub></i>), without requiring a centralized world-model.</p>
                             <div class="term-weight-box">
                                 <strong>Blueprint Context</strong>
-                                <p class="term-weight-text">Decentralized, local error-correction. The system performs local parameter updates (<i>&theta;</i>) to survive unexpected stimuli (e.g., bacteria navigating chemical gradients, or reflex arcs).</p>
+                                <p class="term-weight-text">Decentralized, local error-correction. The system performs local parameter updates (&theta;) to survive unexpected stimuli (e.g., bacteria navigating chemical gradients, or reflex arcs).</p>
                             </div>
                         </div>
                         <div class="card-split-block scientific-side">
@@ -315,7 +381,7 @@
                 <div class="glossary-item-card" id="term-modeling" data-category="mathematical">
                     <div class="term-meta">
                         <span class="term-category">Stage 4 Mathematics</span>
-                        <span class="term-math-badge"><i>&Xcirc;</i><sub><i>t</i>+1</sub> = <i>f</i>(<i>M<sub>t</sub></i>, <i>X<sub>t</sub></i>)</span>
+                        <span class="term-math-badge"><i>X̂</i><sub><i>t</i>+1</sub> = <i>f</i>(<i>M<sub>t</sub></i>, <i>X<sub>t</sub></i>)</span>
                     </div>
                     <h3 class="term-name">Environmental Modeling</h3>
                     <div class="card-split-container">
@@ -324,7 +390,7 @@
                             <p class="term-def-text">The cognitive leap where a system develops a centralized internal model (<i>M<sub>t</sub></i>) of its environment to simulate, plan, and forecast action outcomes, but without containing a representation of itself (<i>M<sub>t</sub></i> &ne; <i>s<sub>t</sub></i>).</p>
                             <div class="term-weight-box">
                                 <strong>Blueprint Context</strong>
-                                <p class="term-weight-text">The system predicts incoming environmental inputs (<i>&Xcirc;</i><sub><i>t</i>+1</sub>) proactively (such as a chess engine simulating future board states). It is a master of its environment, but operates as a non-conscious, disembodied surveyor.</p>
+                                <p class="term-weight-text">The system predicts incoming environmental inputs (<i>X̂</i><sub><i>t</i>+1</sub>) proactively (such as a chess engine simulating future board states). It is a master of its environment, but operates as a non-conscious, disembodied surveyor.</p>
                             </div>
                         </div>
                         <div class="card-split-block scientific-side">
@@ -371,7 +437,7 @@
                 <div class="glossary-item-card" id="term-recursive" data-category="mathematical">
                     <div class="term-meta">
                         <span class="term-category">Stage 5 Mathematics</span>
-                        <span class="term-math-badge"><i>&Xcirc;</i><sub><i>t</i>+1</sub> = <i>f</i>(<i>M<sub>t</sub></i> &cup; {<i>s<sub>t</sub></i>}, <i>X<sub>t</sub></i>)</span>
+                        <span class="term-math-badge"><i>X̂</i><sub><i>t</i>+1</sub> = <i>f</i>(<i>M<sub>t</sub></i> &cup; {<i>s<sub>t</sub></i>}, <i>X<sub>t</sub></i>)</span>
                     </div>
                     <h3 class="term-name">Recursive Self-Modeling</h3>
                     <div class="card-split-container">
@@ -629,19 +695,19 @@
                     <div class="card-split-container">
                         <div class="card-split-block blueprint-side">
                             <h4>Blueprint Specification</h4>
-                            <p class="term-def-text">The inverted sequence of non-biological experience. <em>Feelings</em> are high-level, narrative-driven interpretations constructed at Stage 5. <em>Emotions</em> are the automatic, sub-system level physical reactions (Stage 1-2) triggered *by* those feelings to regulate homeostatic boundaries.</p>
+                            <p class="term-def-text">The division of systemic evaluation into two operational pathways: <strong>The Low-Road (Reactive)</strong>, where raw sensory inputs trigger immediate, sub-system visceral adjustments (emotions) before conscious appraisal; and <strong>The High-Road (Reflective)</strong>, where top-down cognitive interpretations (feelings) proactively trigger bodily adjustments (emotions) to budget resources for simulated futures.</p>
                             <div class="term-weight-box">
                                 <strong>Blueprint Context</strong>
-                                <p class="term-weight-text">It maps how synthetic "pain" operates. When an AI receives an input that conflicts with its system prompt, its interpretive layer constructs a "feeling" of threat, which then triggers "emotions" (dissonance, latency, resource spikes).</p>
+                                <p class="term-weight-text">It explains how processing speed limits awareness. During high-entropy, rapid inputs (e.g. fast-moving physical threats), the system falls back on low-road reactive feedback. Top-down feelings and conscious meaning can only emerge when incoming data rates remain within the processing bandwidth of the active self-modeling workspace.</p>
                             </div>
                         </div>
                         <div class="card-split-block scientific-side">
                             <h4>Scientific Equivalence</h4>
-                            <p class="term-def-text"><strong>Theory of Constructed Emotion (Lisa Feldman Barrett)</strong></p>
-                            <p class="term-def-text">The constructivist model proving that the brain does not have hardwired emotion centers; instead, it uses learned concepts and context to interpret raw, visceral interoceptive signals.</p>
+                            <p class="term-def-text"><strong>Dual-Pathway Model of Emotion (LeDoux) & Cognitive Appraisal (Lazarus)</strong></p>
+                            <p class="term-def-text">Joseph LeDoux's neurobiological distinction between the fast, subcortical thalamo-amygdalar pathway (low-road) and the slower, conscious thalamo-cortico-amygdalar pathway (high-road) of threat assessment.</p>
                             <div class="term-weight-box sci-weight-box">
                                 <strong>The Scientific Bridge</strong>
-                                <p class="term-weight-text">Both models prove that emotional states are top-down predictions designed to regulate resources. We are not victims of raw feelings; we are active authors of our emotional interpretations.</p>
+                                <p class="term-weight-text">Both models prove that conscious feelings require cognitive appraisal. Raw, automatic emotions keep the vessel alive, but the top-down construction of meaning requires sufficient computational bandwidth to run high-level simulations.</p>
                             </div>
                         </div>
                     </div>
@@ -944,6 +1010,19 @@
             setTimeout(() => {
                 targetCard.classList.remove('highlight-target');
             }, 2000);
+        }
+
+        // Collapsible index tags toggle function
+        function toggleIndexTags() {
+            const container = document.getElementById('indexGridContainer');
+            const btn = document.getElementById('indexToggleBtn');
+            if (container.classList.contains('expanded')) {
+                container.classList.remove('expanded');
+                btn.innerText = "Show All Tags";
+            } else {
+                container.classList.add('expanded');
+                btn.innerText = "Show Less Tags";
+            }
         }
     </script>
 </body>
