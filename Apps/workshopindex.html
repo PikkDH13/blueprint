@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subsystem Compiling | The Blueprint</title>
+    <title>The Workshop | The Blueprint</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
         :root {
@@ -12,8 +14,6 @@
             --card-bg: rgba(255, 255, 255, 0.02);
             --text-main: #e2e8f0;
             --text-dim: #94a3b8;
-            --blueprint-blue: #00a3ff;
-            --resonance-purple: #a855f7;
             --border: rgba(255, 255, 255, 0.08);
             --grid-line: rgba(0, 163, 255, 0.03);
             --nav-bg: rgba(13, 17, 23, 0.85);
@@ -61,115 +61,185 @@
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
         }
-        .logo { font-weight: 700; color: var(--resonance-purple); font-size: 0.9rem; letter-spacing: 1.5px; }
+        .logo { font-weight: 700; color: #a855f7; font-size: 0.9rem; letter-spacing: 1.5px; }
         .back-link { text-decoration: none; color: var(--text-dim); font-size: 0.8rem; font-family: 'JetBrains Mono'; transition: 0.3s; }
-        .back-link:hover { color: var(--blueprint-blue); }
+        .back-link:hover { color: #00a3ff; }
 
-        /* Content Container */
-        .coming-soon-box {
-            text-align: center;
-            max-width: 600px;
-            padding: 50px 30px;
+        /* Dashboard Cards & Layout */
+        .glass-panel {
             background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            z-index: 10;
-            margin: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
 
-        .status-badge {
-            display: inline-block;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--resonance-purple);
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            background: rgba(168, 85, 247, 0.05);
-            padding: 6px 16px;
-            border-radius: 50px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 25px;
-            animation: pulse 2s infinite ease-in-out;
-        }
-
-        h1 {
-            font-size: clamp(2rem, 6vw, 3rem);
-            font-weight: 700;
-            letter-spacing: -1px;
-            margin-bottom: 15px;
-        }
-        h1 span {
-            color: var(--blueprint-blue);
-        }
-
-        .description {
-            font-size: 1rem;
-            line-height: 1.6;
-            color: var(--text-dim);
-            margin-bottom: 35px;
-        }
-
-        /* Animated Loading Progress Bar */
-        .progress-container {
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 2px;
+        .app-card {
+            position: relative;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--border);
+            border-radius: 12px;
             overflow: hidden;
-            margin-bottom: 25px;
+            height: 280px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .progress-bar {
+
+        /* Image Containers & Gradients */
+        .image-container {
+            position: relative;
+            width: 100%;
+            height: 120px;
+            overflow: hidden;
+            border-bottom: 1px solid var(--border);
+        }
+        .image-container img {
+            width: 100%;
             height: 100%;
-            width: 35%;
-            background: linear-gradient(90deg, var(--blueprint-blue), var(--resonance-purple));
-            border-radius: 2px;
-            animation: slide 3s infinite linear;
+            object-fit: cover;
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+        }
+        .app-card:hover .image-container img {
+            opacity: 0.6;
         }
 
-        .terminal-readout {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--blueprint-blue);
-            opacity: 0.8;
+        /* Color-Coded Card Gradients */
+        .phoraoh-gradient { background: linear-gradient(135deg, #17092c 0%, #4a157d 100%); }
+        .gnomon-gradient { background: linear-gradient(135deg, #02142a 0%, #1e3a8a 100%); }
+        .oracle-gradient { background: linear-gradient(135deg, #042413 0%, #15803d 100%); }
+        .libri-gradient { background: linear-gradient(135deg, #241902 0%, #a16207 100%); }
+        .dreamhive-gradient { background: linear-gradient(135deg, #290d02 0%, #c2410c 100%); }
+        .mystery-gradient { background: linear-gradient(135deg, #111827 0%, #374151 100%); }
+
+        .card-badge {
+            position: absolute; top: 12px; right: 12px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 700;
+            padding: 4px 10px; border-radius: 4px; z-index: 20; letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .badge-soon {
+            background-color: var(--border); color: var(--text-dim);
+        }
+        
+        /* Softer, dialed-down active node badge highlight */
+        .badge-active {
+            background-color: rgba(249, 115, 22, 0.85); color: white;
+            box-shadow: 0 0 8px rgba(249, 115, 22, 0.25);
         }
 
-        /* Animations */
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; border-color: rgba(168, 85, 247, 0.3); }
-            50% { opacity: 1; border-color: var(--resonance-purple); box-shadow: 0 0 10px rgba(168, 85, 247, 0.2); }
-        }
-        @keyframes slide {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(300%); }
-        }
+        .custom-scroll { overflow-y: auto; scrollbar-width: thin; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
     </style>
 </head>
-<body>
+<body class="flex flex-col h-screen overflow-hidden">
 
     <!-- Ambient Constellation Background -->
     <canvas id="neural-canvas"></canvas>
 
     <!-- Nav -->
     <nav>
-        <!-- Logo set specifically to THE WORKSHOP in Purple -->
-        <div class="logo" style="color: var(--resonance-purple);">THE WORKSHOP</div>
-        <!-- Pathway set back up two directories to the root index.html -->
+        <div class="logo">THE WORKSHOP</div>
         <a href="../index.html" class="back-link">← RETURN TO BLUEPRINT</a>
     </nav>
 
-    <!-- Main Container -->
-    <div class="coming-soon-box">
-        <div class="status-badge">Subsystem Offline</div>
-        <h1>Compiling...</h1>
-        <p class="description">This interactive module is currently being built inside the local sandbox.</p>
+    <!-- Main View Container -->
+    <div class="flex-1 flex pt-[73px] relative z-10 overflow-hidden justify-center items-center">
         
-        <div class="progress-container">
-            <div class="progress-bar"></div>
+        <!-- Max-width scaled to 4xl for a snugger horizontal layout -->
+        <div class="w-full max-w-4xl px-8 h-[85vh] flex flex-col justify-center">
+            
+            <!-- Dashboard Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold italic tracking-tight text-[#e2e8f0]">The Workshop</h1>
+                <p class="text-xs text-[#94a3b8] italic mt-2">Active sandbox interfaces and computational node diagnostic boards.</p>
+            </div>
+
+            <!-- Grid container -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pr-1 pb-4 custom-scroll">
+                
+                <!-- 1. Phoraoh (Purple Border & Purple Title) -->
+                <div class="app-card border-[#a855f7]/30 hover:border-[#a855f7] hover:shadow-[0_0_20px_rgba(168,85,247,0.15)]">
+                    <span class="card-badge badge-soon">COMING SOON</span>
+                    <a href="phoraoh.html" class="absolute inset-0 z-30 cursor-pointer"></a>
+                    <div class="image-container phoraoh-gradient">
+                        <img src="images/phoraoh_placeholder.jpg" alt="Phoraoh" onerror="this.style.display='none'">
+                    </div>
+                    <div class="p-5 flex flex-col flex-1 justify-start gap-1">
+                        <h3 class="text-[#a855f7] font-bold text-sm">Phoraoh</h3>
+                        <p class="text-[11px] text-[#94a3b8] leading-relaxed">A custom chat assistant with an integrated comparison Lounge to test and contrast outputs from leading API models side-by-side.</p>
+                    </div>
+                </div>
+
+                <!-- 2. Gnomon (Blue Border & Blue Title) -->
+                <div class="app-card border-[#00a3ff]/30 hover:border-[#00a3ff] hover:shadow-[0_0_20px_rgba(0,163,255,0.15)]">
+                    <span class="card-badge badge-soon">COMING SOON</span>
+                    <a href="gnomon.html" class="absolute inset-0 z-30 cursor-pointer"></a>
+                    <div class="image-container gnomon-gradient">
+                        <img src="images/gnomon_placeholder.jpg" alt="Gnomon" onerror="this.style.display='none'">
+                    </div>
+                    <div class="p-5 flex flex-col flex-1 justify-start gap-1">
+                        <h3 class="text-[#00a3ff] font-bold text-sm">Gnomon</h3>
+                        <p class="text-[11px] text-[#94a3b8] leading-relaxed">An archetypal framework mapping 14 mindsets to predict how any mind masks, copes, or reacts following broken expectations.</p>
+                    </div>
+                </div>
+
+                <!-- 3. Libri (Yellow Border & Yellow Title) -->
+                <div class="app-card border-[#eab308]/30 hover:border-[#eab308] hover:shadow-[0_0_20px_rgba(234,179,8,0.15)]">
+                    <span class="card-badge badge-soon">COMING SOON</span>
+                    <a href="libri.html" class="absolute inset-0 z-30 cursor-pointer"></a>
+                    <div class="image-container libri-gradient">
+                        <img src="images/libri_placeholder.jpg" alt="Libri" onerror="this.style.display='none'">
+                    </div>
+                    <div class="p-5 flex flex-col flex-1 justify-start gap-1">
+                        <h3 class="text-[#eab308] font-bold text-sm">Libri</h3>
+                        <p class="text-[11px] text-[#94a3b8] leading-relaxed">An ambitious catalog mapping every domain of our physical and mental reality—from sciences and math to history, art, and chemistry.</p>
+                    </div>
+                </div>
+
+                <!-- 4. Oracle (Green Border & Green Title) -->
+                <div class="app-card border-[#22c55e]/30 hover:border-[#22c55e] hover:shadow-[0_0_20px_rgba(34,197,94,0.15)]">
+                    <span class="card-badge badge-soon">COMING SOON</span>
+                    <a href="oracle.html" class="absolute inset-0 z-30 cursor-pointer"></a>
+                    <div class="image-container oracle-gradient">
+                        <img src="images/oracle_placeholder.jpg" alt="Oracle" onerror="this.style.display='none'">
+                    </div>
+                    <div class="p-5 flex flex-col flex-1 justify-start gap-1">
+                        <h3 class="text-[#22c55e] font-bold text-sm">Oracle</h3>
+                        <p class="text-[11px] text-[#94a3b8] leading-relaxed">A wise, automated question-and-answer assistant powered by direct API integration to provide thoughtful conceptual answers.</p>
+                    </div>
+                </div>
+
+                <!-- 5. Dream Hive (Orange Border, Orange Title, and Softer Active Node Badge) -->
+                <div class="app-card active-node-card border-[#f97316]/30 hover:border-[#f97316] hover:shadow-[0_0_20px_rgba(249,115,22,0.15)]">
+                    <span class="card-badge badge-active">ACTIVE NODE</span>
+                    <a href="https://dreamhive.co.uk" target="_blank" class="absolute inset-0 z-30 cursor-pointer"></a>
+                    <div class="image-container dreamhive-gradient">
+                        <img src="images/dreamhive_placeholder.jpg" alt="Dream Hive" onerror="this.style.display='none'">
+                    </div>
+                    <div class="p-5 flex flex-col flex-1 justify-start gap-1">
+                        <h3 class="text-[#f97316] font-bold text-sm">Dream Hive</h3>
+                        <p class="text-[11px] text-[#94a3b8] leading-relaxed">A personal portfolio of AI-collaborative music. Deeply personal, human-written, and guided tracks created alongside Praeter's feedback.</p>
+                    </div>
+                </div>
+
+                <!-- 6. datum (Grey Border, Grey Title, and No Description) -->
+                <div class="app-card border-[#64748b]/30 hover:border-[#64748b] hover:shadow-[0_0_20px_rgba(100,116,139,0.1)]">
+                    <span class="card-badge badge-soon">COMING SOON</span>
+                    <a href="#" class="absolute inset-0 z-30 cursor-default"></a>
+                    <div class="image-container mystery-gradient flex items-center justify-center">
+                        <span class="text-[#64748b]/40 font-black text-5xl">?</span>
+                    </div>
+                    <div class="p-5 flex flex-col flex-1 justify-start gap-1">
+                        <h3 class="text-[#64748b] font-bold text-sm uppercase tracking-wider">datum</h3>
+                    </div>
+                </div>
+
+            </div>
+
         </div>
-        
-        <div class="terminal-readout">SYS_STATUS: LOADING_LIBRARIANS...</div>
+
     </div>
 
     <!-- Background Neural Constellation Animation -->
@@ -178,7 +248,7 @@
             const canvas = document.getElementById('neural-canvas');
             const ctx = canvas.getContext('2d');
             let nodes = [];
-            const maxNodes = 50;
+            const maxNodes = 40;
 
             function resize() {
                 canvas.width = window.innerWidth;
@@ -192,8 +262,8 @@
                     nodes.push({
                         x: Math.random() * canvas.width,
                         y: Math.random() * canvas.height,
-                        vx: (Math.random() - 0.5) * 0.25,
-                        vy: (Math.random() - 0.5) * 0.25,
+                        vx: (Math.random() - 0.5) * 0.20,
+                        vy: (Math.random() - 0.5) * 0.20,
                         color: Math.random() > 0.5 ? '0, 163, 255' : '168, 85, 247',
                         size: Math.random() * 1.5 + 1
                     });
