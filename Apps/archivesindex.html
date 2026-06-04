@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subsystem Compiling | The Blueprint</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
     
     <style>
         :root {
@@ -25,16 +28,11 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
-            overflow: hidden;
             background-image: 
                 linear-gradient(var(--grid-line) 1px, transparent 1px),
                 linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
             background-size: 50px 50px;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
         }
 
         /* Ambient Background Canvas */
@@ -42,7 +40,7 @@
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: -1;
+            z-index: 1;
             opacity: 0.5;
             pointer-events: none;
         }
@@ -65,120 +63,358 @@
         .back-link { text-decoration: none; color: var(--text-dim); font-size: 0.8rem; font-family: 'JetBrains Mono'; transition: 0.3s; }
         .back-link:hover { color: var(--blueprint-blue); }
 
-        /* Content Container */
-        .coming-soon-box {
-            text-align: center;
-            max-width: 600px;
-            padding: 50px 30px;
+        /* Left and Right Sidebars Style */
+        .glass-panel {
             background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            z-index: 10;
-            margin: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
 
-        .status-badge {
-            display: inline-block;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--resonance-purple);
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            background: rgba(168, 85, 247, 0.05);
-            padding: 6px 16px;
-            border-radius: 50px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 25px;
-            animation: pulse 2s infinite ease-in-out;
-        }
-
-        h1 {
-            font-size: clamp(2rem, 6vw, 3rem);
-            font-weight: 700;
-            letter-spacing: -1px;
-            margin-bottom: 15px;
-        }
-        h1 span {
-            color: var(--blueprint-blue);
-        }
-
-        .description {
-            font-size: 1rem;
-            line-height: 1.6;
+        .nav-btn {
             color: var(--text-dim);
-            margin-bottom: 35px;
+            transition: 0.3s;
         }
-
-        /* Animated Loading Progress Bar */
-        .progress-container {
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 2px;
-            overflow: hidden;
-            margin-bottom: 25px;
-        }
-        .progress-bar {
-            height: 100%;
-            width: 35%;
-            background: linear-gradient(90deg, var(--blueprint-blue), var(--resonance-purple));
-            border-radius: 2px;
-            animation: slide 3s infinite linear;
-        }
-
-        .terminal-readout {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
+        .nav-btn:hover {
+            background: rgba(0, 163, 255, 0.05);
             color: var(--blueprint-blue);
-            opacity: 0.8;
+        }
+        .nav-active {
+            background: rgba(168, 85, 247, 0.1) !important;
+            color: var(--resonance-purple) !important;
+            border-left: 3px solid var(--resonance-purple);
         }
 
-        /* Animations */
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; border-color: rgba(168, 85, 247, 0.3); }
-            50% { opacity: 1; border-color: var(--resonance-purple); box-shadow: 0 0 10px rgba(168, 85, 247, 0.2); }
+        .online-text { 
+            animation: flashPulse 4s infinite; 
+            font-family: 'JetBrains Mono', monospace; 
+            font-weight: bold; 
+            color: var(--blueprint-blue);
         }
-        @keyframes slide {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(300%); }
+
+        @keyframes flashPulse { 
+            0%, 100% { opacity: 0.6; } 
+            50% { opacity: 1; color: var(--resonance-purple); } 
         }
+
+        /* Result Cards & Search Styles */
+        .result-card { 
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
+            max-height: 85px; 
+            overflow: hidden; 
+            border: 1px solid var(--border); 
+        }
+        .result-card:hover { 
+            max-height: 800px; 
+            background: rgba(255, 255, 255, 0.04); 
+            transform: translateY(-2px); 
+            border-color: var(--blueprint-blue); 
+        }
+
+        .search-highlight {
+            background-color: rgba(0, 163, 255, 0.2);
+            color: var(--blueprint-blue);
+            font-weight: 600;
+            padding: 1px 3px;
+            border-radius: 4px;
+        }
+
+        .pin-slot { 
+            height: 44px; 
+            border: 1px solid var(--border); 
+            transition: all 0.3s; 
+            background: rgba(0, 0, 0, 0.2); 
+        }
+        
+        .custom-scroll { overflow-y: auto; scrollbar-width: thin; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
     </style>
 </head>
-<body>
+<body class="flex flex-col h-screen overflow-hidden">
 
     <!-- Ambient Constellation Background -->
     <canvas id="neural-canvas"></canvas>
 
     <!-- Nav -->
     <nav>
-        <!-- Logo set specifically to THE ARCHIVES in Purple -->
-        <div class="logo" style="color: var(--resonance-purple);">THE ARCHIVES</div>
-        <!-- Pathway set back up two directories to the root index.html -->
+        <div class="logo">THE ARCHIVES</div>
         <a href="../index.html" class="back-link">← RETURN TO BLUEPRINT</a>
     </nav>
 
-    <!-- Main Container -->
-    <div class="coming-soon-box">
-        <div class="status-badge">Subsystem Offline</div>
-        <h1>Compiling...</h1>
-        <p class="description">This interactive module is currently being built inside the local sandbox.</p>
+    <!-- App Shell Wrapper -->
+    <div class="flex-1 flex pt-[73px] relative z-10 overflow-hidden">
         
-        <div class="progress-container">
-            <div class="progress-bar"></div>
-        </div>
-        
-        <div class="terminal-readout">SYS_STATUS: LOADING_LIBRARIANS...</div>
+        <!-- LEFT SIDEBAR -->
+        <aside class="w-64 glass-panel flex flex-col p-6 border-r border-white/5 custom-scroll">
+            <div onclick="showTab('search')" class="flex items-center gap-3 mb-8 cursor-pointer group">
+                <div class="p-2 rounded-lg border border-purple-500/30 bg-purple-500/10 group-hover:scale-105 transition">
+                    <i data-lucide="zap" class="w-5 h-5 text-[#a855f7]"></i>
+                </div>
+                <h1 class="text-lg font-bold tracking-tight italic text-[#e2e8f0] group-hover:text-white transition">IntelliSearch</h1>
+            </div>
+            
+            <nav class="space-y-1 flex-1">
+                <button onclick="showTab('search')" id="btn-search" class="nav-btn nav-active w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
+                    <i data-lucide="search" class="w-4 h-4 text-[#00a3ff]"></i> Search Core
+                </button>
+                <button onclick="showTab('library')" id="btn-library" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
+                    <i data-lucide="library" class="w-4 h-4 text-[#00a3ff]"></i> Library
+                </button>
+                <button onclick="showTab('stars')" id="btn-stars" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-[#00a3ff]"></i> Star View
+                </button>
+                
+                <div class="pt-4 mt-4 border-t border-white/5">
+                    <a href="https://blueprint-online.com" target="_blank" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
+                        <i data-lucide="globe" class="w-4 h-4 text-[#94a3b8]"></i> The Blueprint
+                    </a>
+                </div>
+            </nav>
+            
+            <div class="mt-auto pt-4 border-t border-white/5 text-center">
+                <div class="text-[9px] font-bold uppercase tracking-[0.2em] text-[#94a3b8]">LOCAL NODE: <span class="online-text">ONLINE</span></div>
+            </div>
+        </aside>
+
+        <!-- MAIN VIEW AREA -->
+        <main class="flex-1 flex flex-col relative h-full overflow-hidden">
+            <header class="h-12 flex items-center justify-between px-8 border-b border-white/5">
+                <div id="fileCount" class="text-[#94a3b8] text-[9px] font-mono tracking-widest uppercase italic">Initializing Node Cluster...</div>
+                <div class="h-6 w-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[9px] font-bold text-[#e2e8f0]">U1</div>
+            </header>
+
+            <div class="flex-1 relative flex flex-col overflow-hidden">
+                <!-- SEARCH TAB -->
+                <div id="tab-search" class="tab-content absolute inset-0 flex flex-col">
+                    <div class="px-12 pt-10 pb-4 text-center">
+                        <h2 class="text-4xl font-black mb-1 tracking-tighter text-[#e2e8f0] italic">Search Core</h2>
+                        <p class="text-[#94a3b8] italic text-xs mb-6">Querying the static node database...</p>
+                        <div class="max-w-2xl mx-auto relative">
+                            <input type="text" id="searchInput" placeholder="Query the database..." 
+                                class="w-full bg-[#0d1117]/80 border border-white/10 rounded-xl py-4 pl-12 pr-6 focus:outline-none focus:border-[#a855f7] text-md text-[#e2e8f0] shadow-2xl transition-all italic">
+                            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-[#94a3b8] w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto custom-scroll px-12 pb-20">
+                        <div id="results" class="max-w-2xl mx-auto space-y-4"></div>
+                    </div>
+                </div>
+
+                <!-- LIBRARY TAB -->
+                <div id="tab-library" class="tab-content absolute inset-0 custom-scroll p-12 hidden">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="flex justify-between items-center mb-8">
+                            <h2 class="text-2xl font-bold text-[#e2e8f0] italic">The Library</h2>
+                            <select id="sortFilter" onchange="renderLibrary()" class="bg-[#0d1117] border border-white/10 text-[#e2e8f0] rounded-lg px-3 py-1 text-xs focus:outline-none focus:border-[#00a3ff]">
+                                <option value="name-asc">Alphabetical (A-Z)</option>
+                                <option value="name-desc">Alphabetical (Z-A)</option>
+                                <option value="size-desc">Density (High-Low)</option>
+                                <option value="size-asc">Density (Low-High)</option>
+                            </select>
+                        </div>
+                        <div id="library-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-20"></div>
+                    </div>
+                </div>
+
+                <!-- STARS TAB -->
+                <div id="tab-stars" class="tab-content absolute inset-0 p-8 hidden">
+                    <div id="star-view-container" class="w-full h-full glass-panel rounded-2xl relative overflow-hidden cursor-crosshair"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- RIGHT SIDEBAR (NEURAL ANCHORS) -->
+        <aside class="w-72 glass-panel flex flex-col p-6 border-l border-white/5 custom-scroll">
+            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-[#94a3b8] mb-6 text-center">Neural Anchors</h3>
+            <div id="pin-container" class="space-y-2"></div>
+        </aside>
+
     </div>
 
-    <!-- Background Neural Constellation Animation -->
+    <!-- Scripts and Logic -->
     <script>
+        // CONFIGURATION: Set the relative or absolute folder where your PDFs are stored on your website host
+        const PDF_DIRECTORY_PATH = "../pdfs/"; 
+        const INDEX_FILE_URL = "../pdfs/search_index.json";
+
+        let allFiles = [];
+        let pinnedFiles = JSON.parse(localStorage.getItem('pins')) || [];
+
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Load Static JSON Index
+        async function loadFiles() {
+            try {
+                const response = await fetch(INDEX_FILE_URL);
+                allFiles = await response.json();
+                document.getElementById('fileCount').innerText = `${allFiles.length} NODES SYNCHRONIZED`;
+                renderPins();
+            } catch (err) {
+                console.error("Failed to load static index file:", err);
+                document.getElementById('fileCount').innerText = "ERROR LOADING NODES";
+            }
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
+            const activeBtn = document.getElementById('btn-' + tab);
+            if(activeBtn) activeBtn.classList.add('nav-active');
+            if(tab === 'library') renderLibrary();
+            if(tab === 'stars') setTimeout(initStarField, 100);
+            lucide.createIcons();
+        }
+
+        function togglePin(filename) {
+            const index = pinnedFiles.indexOf(filename);
+            if (index > -1) {
+                pinnedFiles.splice(index, 1);
+            } else if (pinnedFiles.length < 15) {
+                pinnedFiles.push(filename);
+            } else {
+                alert("Anchor buffer full (15/15)."); return;
+            }
+            localStorage.setItem('pins', JSON.stringify(pinnedFiles));
+            renderPins();
+            performSearch();
+            renderLibrary();
+        }
+
+        function renderPins() {
+            const cont = document.getElementById('pin-container');
+            let html = '';
+            for(let i=0; i<15; i++) {
+                if(pinnedFiles[i]) {
+                    html += `<div onclick="window.open('${PDF_DIRECTORY_PATH}${pinnedFiles[i]}', '_blank')" class="pin-slot rounded-xl p-3 flex items-center gap-3 cursor-pointer group hover:border-[#00a3ff]">
+                        <i data-lucide="paperclip" class="w-3 h-3 text-[#a855f7]"></i>
+                        <span class="text-[10px] font-bold truncate text-[#e2e8f0] w-36 italic">${pinnedFiles[i]}</span>
+                        <i onclick="event.stopPropagation(); togglePin('${pinnedFiles[i]}')" data-lucide="trash-2" class="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100 hover:text-red-500 text-[#00a3ff]"></i>
+                    </div>`;
+                } else {
+                    html += `<div class="pin-slot rounded-xl flex items-center justify-center text-[9px] text-[#94a3b8]/30 italic">SLOT ${String(i+1).padStart(2,'0')}</div>`;
+                }
+            }
+            cont.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function performSearch() {
+            const val = document.getElementById('searchInput').value.toLowerCase();
+            const resDiv = document.getElementById('results');
+            if (val.length < 2) { resDiv.innerHTML = ''; return; }
+            
+            const matches = allFiles.filter(f => f.content.includes(val));
+            resDiv.innerHTML = matches.map(file => {
+                const index = file.content.indexOf(val);
+                const snippet = file.rawText.substring(Math.max(0, index - 150), index + 550).replace(/\n/g, ' ');
+                const highlighted = snippet.replace(new RegExp(val, 'gi'), m => `<span class="search-highlight">${m}</span>`);
+                const isPinned = pinnedFiles.includes(file.name);
+                return `<div onclick="window.open('${PDF_DIRECTORY_PATH}${file.name}', '_blank')" class="result-card glass-panel p-5 rounded-xl cursor-pointer border-l-2 border-[#00a3ff] relative group">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-[#e2e8f0] font-bold text-xs italic">${file.name}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[9px] text-[#94a3b8] font-mono italic">${file.size}</span>
+                            <i onclick="event.stopPropagation(); togglePin('${file.name}')" data-lucide="pin" class="w-3 h-3 ${isPinned ? 'text-[#a855f7]' : 'opacity-20 group-hover:opacity-100 text-[#94a3b8]'}"></i>
+                        </div>
+                    </div>
+                    <p class="text-[#94a3b8] text-[11px] leading-relaxed font-light italic">"...${highlighted}..."</p>
+                </div>`;
+            }).join('');
+            lucide.createIcons();
+        }
+        document.getElementById('searchInput').addEventListener('input', performSearch);
+
+        function renderLibrary() {
+            const sortVal = document.getElementById('sortFilter').value;
+            let sorted = [...allFiles];
+            if(sortVal === 'name-asc') sorted.sort((a,b) => a.name.localeCompare(b.name));
+            if(sortVal === 'name-desc') sorted.sort((a,b) => b.name.localeCompare(a.name));
+            if(sortVal === 'size-desc') sorted.sort((a,b) => b.size_bytes - a.size_bytes);
+            if(sortVal === 'size-asc') sorted.sort((a,b) => a.size_bytes - b.size_bytes);
+            
+            const grid = document.getElementById('library-grid');
+            grid.innerHTML = sorted.map(file => {
+                const isPinned = pinnedFiles.includes(file.name);
+                return `<div onclick="window.open('${PDF_DIRECTORY_PATH}${file.name}', '_blank')" class="glass-panel p-6 rounded-2xl transition-all cursor-pointer group flex flex-col items-center relative hover:border-[#a855f7]">
+                    <i onclick="event.stopPropagation(); togglePin('${file.name}')" data-lucide="pin" class="absolute top-3 right-3 w-3 h-3 text-[#a855f7] ${isPinned ? '' : 'opacity-0 group-hover:opacity-100'}"></i>
+                    <i data-lucide="file-text" class="text-[#00a3ff] w-10 h-10 mb-4 group-hover:scale-110 transition duration-500 opacity-90"></i>
+                    <h4 class="text-[#e2e8f0] text-[11px] font-medium text-center leading-snug break-words w-full italic">${file.name}</h4>
+                </div>`}).join('');
+            lucide.createIcons();
+        }
+
+        let starP5 = null;
+        function initStarField() {
+            const container = document.getElementById('star-view-container');
+            if(starP5) { 
+                starP5.resizeCanvas(container.offsetWidth, container.offsetHeight); 
+                return; 
+            }
+            starP5 = new p5((p) => {
+                let stars = [];
+                p.setup = () => {
+                    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+                    canvas.parent('star-view-container');
+                    for(let i=0; i<allFiles.length; i++) {
+                        stars.push({ 
+                            x: p.random(p.width * 0.05, p.width * 0.95), 
+                            y: p.random(p.height * 0.05, p.height * 0.95), 
+                            name: allFiles[i].name, 
+                            r: p.random(4, 7), 
+                            t: p.random(100) 
+                        });
+                    }
+                };
+                p.draw = () => {
+                    p.clear();
+                    let hoveringAny = false;
+                    stars.forEach(s => {
+                        let tw = p.map(p.sin(p.frameCount * 0.04 + s.t), -1, 1, 0.4, 1);
+                        let isHovered = p.dist(p.mouseX, p.mouseY, s.x, s.y) < 20;
+                        p.noStroke();
+                        
+                        // Map node colors to Blueprint Blue or Resonance Purple
+                        if (s.t > 50) {
+                            p.fill(0, 163, 255, 255 * tw);
+                        } else {
+                            p.fill(168, 85, 247, 255 * tw);
+                        }
+                        
+                        p.circle(s.x, s.y, isHovered ? s.r * 2 : s.r);
+                        if(isHovered) { 
+                            hoveringAny = true; 
+                            p.fill(226, 232, 240); 
+                            p.textSize(10); 
+                            p.textAlign(p.CENTER); 
+                            p.text(s.name, s.x, s.y - 18); 
+                        }
+                    });
+                    p.cursor(hoveringAny ? p.HAND : p.ARROW);
+                };
+                p.mousePressed = () => {
+                    if (document.getElementById('tab-stars').classList.contains('hidden')) return;
+                    stars.forEach(s => {
+                        if(p.dist(p.mouseX, p.mouseY, s.x, s.y) < 20) {
+                            if (p.keyIsPressed && p.keyCode === p.SHIFT) {
+                                togglePin(s.name);
+                            } else {
+                                window.open(PDF_DIRECTORY_PATH + s.name, '_blank');
+                            }
+                        }
+                    });
+                };
+            });
+        }
+
+        // Background Neural Constellation Animation (from archivesindex.html)
         (function() {
             const canvas = document.getElementById('neural-canvas');
             const ctx = canvas.getContext('2d');
             let nodes = [];
-            const maxNodes = 50;
+            const maxNodes = 40;
 
             function resize() {
                 canvas.width = window.innerWidth;
@@ -192,8 +428,8 @@
                     nodes.push({
                         x: Math.random() * canvas.width,
                         y: Math.random() * canvas.height,
-                        vx: (Math.random() - 0.5) * 0.25,
-                        vy: (Math.random() - 0.5) * 0.25,
+                        vx: (Math.random() - 0.5) * 0.20,
+                        vy: (Math.random() - 0.5) * 0.20,
                         color: Math.random() > 0.5 ? '0, 163, 255' : '168, 85, 247',
                         size: Math.random() * 1.5 + 1
                     });
@@ -237,6 +473,9 @@
             init();
             draw();
         })();
+
+        // Start initialization
+        loadFiles();
     </script>
 </body>
 </html>
