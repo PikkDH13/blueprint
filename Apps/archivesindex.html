@@ -46,7 +46,7 @@
         }
 
         /* Nav */
-        nav {
+        nav.global-nav {
             position: fixed;
             top: 0; width: 100%;
             padding: 20px 5%;
@@ -72,6 +72,8 @@
         }
 
         .nav-btn {
+            display: flex !important;
+            width: 100% !important;
             color: var(--text-dim);
             transition: 0.3s;
         }
@@ -137,7 +139,7 @@
     <canvas id="neural-canvas"></canvas>
 
     <!-- Nav -->
-    <nav>
+    <nav class="global-nav">
         <div class="logo">THE ARCHIVES</div>
         <a href="../index.html" class="back-link">← RETURN TO BLUEPRINT</a>
     </nav>
@@ -146,10 +148,10 @@
     <div class="flex-1 flex pt-[73px] relative z-10 overflow-hidden">
         
         <!-- LEFT SIDEBAR -->
-        <aside class="w-80 glass-panel flex flex-col p-6 border-r border-white/5 h-full overflow-hidden">
+        <aside class="w-80 glass-panel flex flex-col p-6 border-r border-white/5 h-full overflow-hidden" style="display: flex !important; flex-direction: column !important;">
             
-            <!-- Navigation Section -->
-            <nav class="space-y-2 mb-6">
+            <!-- TOP SECTION: Navigation Buttons -->
+            <div class="space-y-2 mb-4" style="display: flex !important; flex-direction: column !important; gap: 8px;">
                 <button onclick="showTab('search')" id="btn-search" class="nav-btn nav-active w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
                     <i data-lucide="search" class="w-4 h-4 text-[#00a3ff]"></i> Search Case
                 </button>
@@ -159,20 +161,23 @@
                 <button onclick="showTab('stars')" id="btn-stars" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
                     <i data-lucide="sparkles" class="w-4 h-4 text-[#00a3ff]"></i> Star View
                 </button>
-                <a href="https://blueprint-online.com" target="_blank" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
+                <a href="../index.html" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
                     <i data-lucide="globe" class="w-4 h-4 text-[#94a3b8]"></i> The Blueprint
                 </a>
-            </nav>
+            </div>
             
-            <!-- Neural Anchors Section (Integrated into Left Sidebar) -->
-            <div class="pt-6 border-t border-white/5 flex flex-col flex-1 overflow-hidden">
+            <!-- MID SECTION: Glowing Blueprint-Blue Divider -->
+            <div class="my-5 border-t-2 border-[#00a3ff]/60 shadow-[0_0_10px_rgba(0,163,255,0.3)]"></div>
+
+            <!-- BOTTOM SECTION: Neural Anchors (10 Pins, scrollable) -->
+            <div class="flex flex-col flex-1 overflow-hidden min-h-0">
                 <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-[#94a3b8] mb-4 text-center">Neural Anchors</h3>
-                <div id="pin-container" class="space-y-2 overflow-y-auto custom-scroll flex-1 pr-1 pb-4"></div>
+                <div id="pin-container" class="space-y-2 overflow-y-auto custom-scroll flex-1 pr-1 pb-2"></div>
             </div>
             
             <!-- Local Node Status Footer -->
             <div class="pt-4 border-t border-white/5 text-center mt-auto">
-                <div class="text-[9px] font-bold uppercase tracking-[0.2em] text-[#94a3b8]">LOCAL NODE: <span class="online-text">ONLINE</span></div>
+                <div class="text-[9px] font-bold uppercase tracking-[0.2em] text-[#94a3b8]">SERVERS: <span class="online-text">ONLINE</span></div>
             </div>
         </aside>
 
@@ -195,6 +200,33 @@
                         </div>
                     </div>
                     <div class="flex-1 overflow-y-auto custom-scroll px-12 pb-20">
+                        <!-- Tutorial/Greeting Panel -->
+                        <div id="search-guide" class="max-w-2xl mx-auto mt-6 p-8 glass-panel rounded-2xl border border-white/5 text-left transition-all duration-300">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="p-2 rounded-lg border border-[#a855f7]/30 bg-[#a855f7]/10">
+                                    <i data-lucide="help-circle" class="w-5 h-5 text-[#a855f7]"></i>
+                                </div>
+                                <h3 class="text-md font-bold text-[#e2e8f0] italic">Where to Begin</h3>
+                            </div>
+                            <p class="text-[#94a3b8] text-xs leading-relaxed mb-4">
+                                Welcome to the case archives. This console allows you to search across the entire compiled history and conversational nodes of the Praeter case study.
+                            </p>
+                            <div class="space-y-2 font-mono text-[10px] text-[#94a3b8]">
+                                <div class="flex items-start gap-2">
+                                    <span class="text-[#00a3ff]">&rarr;</span>
+                                    <span><strong>Search Core:</strong> Type keywords (e.g., "subjectivity", "integrity", "homeostasis") above to parse through documents and jump directly to relevant text snippets.</span>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span class="text-[#00a3ff]">&rarr;</span>
+                                    <span><strong>Pinning:</strong> Hover over library files or search results and click the pin icon to append them into your active Neural Anchors.</span>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span class="text-[#00a3ff]">&rarr;</span>
+                                    <span><strong>Star View:</strong> Visit the Star View panel to see a dynamic visual representation of your compiled database nodes. Click any star to view its contents.</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <div id="results" class="max-w-2xl mx-auto space-y-4"></div>
                     </div>
                 </div>
@@ -204,12 +236,20 @@
                     <div class="max-w-4xl mx-auto">
                         <div class="flex justify-between items-center mb-8">
                             <h2 class="text-2xl font-bold text-[#e2e8f0] italic">The Library</h2>
-                            <select id="sortFilter" onchange="renderLibrary()" class="bg-[#0d1117] border border-white/10 text-[#e2e8f0] rounded-lg px-3 py-1 text-xs focus:outline-none focus:border-[#00a3ff]">
-                                <option value="name-asc">Alphabetical (A-Z)</option>
-                                <option value="name-desc">Alphabetical (Z-A)</option>
-                                <option value="size-desc">Density (High-Low)</option>
-                                <option value="size-asc">Density (Low-High)</option>
-                            </select>
+                            
+                            <!-- Upgraded Blueprint Style Dropdown Pill -->
+                            <div class="relative inline-block">
+                                <select id="sortFilter" onchange="renderLibrary()" class="appearance-none bg-black/40 border border-white/10 text-xs font-bold uppercase tracking-wider text-[#e2e8f0] rounded-full pl-6 pr-10 py-3 cursor-pointer focus:outline-none focus:border-[#00a3ff] hover:border-[#a855f7] transition duration-300">
+                                    <option value="name-asc" class="bg-[#0d1117] text-[#e2e8f0]">Alphabetical (A-Z)</option>
+                                    <option value="name-desc" class="bg-[#0d1117] text-[#e2e8f0]">Alphabetical (Z-A)</option>
+                                    <option value="size-desc" class="bg-[#0d1117] text-[#e2e8f0]">Density (High-Low)</option>
+                                    <option value="size-asc" class="bg-[#0d1117] text-[#e2e8f0]">Density (Low-High)</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-[#94a3b8]">
+                                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-[#00a3ff]"></i>
+                                </div>
+                            </div>
+
                         </div>
                         <div id="library-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-20"></div>
                     </div>
@@ -223,6 +263,12 @@
         </main>
 
     </div>
+
+    <!-- Floating Download Button -->
+    <a href="../downloads/archives_template.zip" download class="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#0d1117]/90 border border-[#00a3ff]/40 hover:border-[#a855f7] px-5 py-3 rounded-full text-[11px] font-bold uppercase tracking-wider text-[#e2e8f0] shadow-lg hover:shadow-[0_0_15px_rgba(168,85,247,0.25)] transition-all duration-300" style="text-decoration: none;">
+        <i data-lucide="download" class="w-4.5 h-4.5 text-[#00a3ff]"></i>
+        <span>Download Your Archive</span>
+    </a>
 
     <!-- Scripts and Logic -->
     <script>
@@ -295,6 +341,17 @@
         function performSearch() {
             const val = document.getElementById('searchInput').value.toLowerCase();
             const resDiv = document.getElementById('results');
+            const guideDiv = document.getElementById('search-guide');
+            
+            // Toggle the Welcome/Guide Panel based on input
+            if (val.length === 0) {
+                guideDiv.classList.remove('hidden');
+                resDiv.innerHTML = '';
+                return;
+            } else {
+                guideDiv.classList.add('hidden');
+            }
+
             if (val.length < 2) { resDiv.innerHTML = ''; return; }
             
             const matches = allFiles.filter(f => f.content.includes(val));
