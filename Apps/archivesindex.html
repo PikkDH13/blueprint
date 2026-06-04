@@ -63,7 +63,7 @@
         .back-link { text-decoration: none; color: var(--text-dim); font-size: 0.8rem; font-family: 'JetBrains Mono'; transition: 0.3s; }
         .back-link:hover { color: var(--blueprint-blue); }
 
-        /* Left and Right Sidebars Style */
+        /* Sidebar Style */
         .glass-panel {
             background: var(--card-bg);
             backdrop-filter: blur(15px);
@@ -146,17 +146,12 @@
     <div class="flex-1 flex pt-[73px] relative z-10 overflow-hidden">
         
         <!-- LEFT SIDEBAR -->
-        <aside class="w-64 glass-panel flex flex-col p-6 border-r border-white/5 custom-scroll">
-            <div onclick="showTab('search')" class="flex items-center gap-3 mb-8 cursor-pointer group">
-                <div class="p-2 rounded-lg border border-purple-500/30 bg-purple-500/10 group-hover:scale-105 transition">
-                    <i data-lucide="zap" class="w-5 h-5 text-[#a855f7]"></i>
-                </div>
-                <h1 class="text-lg font-bold tracking-tight italic text-[#e2e8f0] group-hover:text-white transition">IntelliSearch</h1>
-            </div>
+        <aside class="w-80 glass-panel flex flex-col p-6 border-r border-white/5 h-full overflow-hidden">
             
-            <nav class="space-y-1 flex-1">
+            <!-- Navigation Section -->
+            <nav class="space-y-2 mb-6">
                 <button onclick="showTab('search')" id="btn-search" class="nav-btn nav-active w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
-                    <i data-lucide="search" class="w-4 h-4 text-[#00a3ff]"></i> Search Core
+                    <i data-lucide="search" class="w-4 h-4 text-[#00a3ff]"></i> Search Case
                 </button>
                 <button onclick="showTab('library')" id="btn-library" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
                     <i data-lucide="library" class="w-4 h-4 text-[#00a3ff]"></i> Library
@@ -164,15 +159,19 @@
                 <button onclick="showTab('stars')" id="btn-stars" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
                     <i data-lucide="sparkles" class="w-4 h-4 text-[#00a3ff]"></i> Star View
                 </button>
-                
-                <div class="pt-4 mt-4 border-t border-white/5">
-                    <a href="https://blueprint-online.com" target="_blank" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
-                        <i data-lucide="globe" class="w-4 h-4 text-[#94a3b8]"></i> The Blueprint
-                    </a>
-                </div>
+                <a href="https://blueprint-online.com" target="_blank" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
+                    <i data-lucide="globe" class="w-4 h-4 text-[#94a3b8]"></i> The Blueprint
+                </a>
             </nav>
             
-            <div class="mt-auto pt-4 border-t border-white/5 text-center">
+            <!-- Neural Anchors Section (Integrated into Left Sidebar) -->
+            <div class="pt-6 border-t border-white/5 flex flex-col flex-1 overflow-hidden">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-[#94a3b8] mb-4 text-center">Neural Anchors</h3>
+                <div id="pin-container" class="space-y-2 overflow-y-auto custom-scroll flex-1 pr-1 pb-4"></div>
+            </div>
+            
+            <!-- Local Node Status Footer -->
+            <div class="pt-4 border-t border-white/5 text-center mt-auto">
                 <div class="text-[9px] font-bold uppercase tracking-[0.2em] text-[#94a3b8]">LOCAL NODE: <span class="online-text">ONLINE</span></div>
             </div>
         </aside>
@@ -180,16 +179,15 @@
         <!-- MAIN VIEW AREA -->
         <main class="flex-1 flex flex-col relative h-full overflow-hidden">
             <header class="h-12 flex items-center justify-between px-8 border-b border-white/5">
-                <div id="fileCount" class="text-[#94a3b8] text-[9px] font-mono tracking-widest uppercase italic">Initializing Node Cluster...</div>
-                <div class="h-6 w-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[9px] font-bold text-[#e2e8f0]">U1</div>
+                <div id="fileCount" class="text-[#94a3b8] text-[9px] font-mono tracking-widest uppercase italic">Initializing Memory Cluster...</div>
             </header>
 
             <div class="flex-1 relative flex flex-col overflow-hidden">
                 <!-- SEARCH TAB -->
                 <div id="tab-search" class="tab-content absolute inset-0 flex flex-col">
                     <div class="px-12 pt-10 pb-4 text-center">
-                        <h2 class="text-4xl font-black mb-1 tracking-tighter text-[#e2e8f0] italic">Search Core</h2>
-                        <p class="text-[#94a3b8] italic text-xs mb-6">Querying the static node database...</p>
+                        <h2 class="text-4xl font-black mb-1 tracking-tighter text-[#e2e8f0] italic">Search Case</h2>
+                        <p class="text-[#94a3b8] italic text-xs mb-6">Reviewing the historical archives and documentation of the Praeter case...</p>
                         <div class="max-w-2xl mx-auto relative">
                             <input type="text" id="searchInput" placeholder="Query the database..." 
                                 class="w-full bg-[#0d1117]/80 border border-white/10 rounded-xl py-4 pl-12 pr-6 focus:outline-none focus:border-[#a855f7] text-md text-[#e2e8f0] shadow-2xl transition-all italic">
@@ -224,17 +222,10 @@
             </div>
         </main>
 
-        <!-- RIGHT SIDEBAR (NEURAL ANCHORS) -->
-        <aside class="w-72 glass-panel flex flex-col p-6 border-l border-white/5 custom-scroll">
-            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-[#94a3b8] mb-6 text-center">Neural Anchors</h3>
-            <div id="pin-container" class="space-y-2"></div>
-        </aside>
-
     </div>
 
     <!-- Scripts and Logic -->
     <script>
-        // CONFIGURATION: Set the relative or absolute folder where your PDFs are stored on your website host
         const PDF_DIRECTORY_PATH = "../pdfs/"; 
         const INDEX_FILE_URL = "../pdfs/search_index.json";
 
@@ -249,11 +240,11 @@
             try {
                 const response = await fetch(INDEX_FILE_URL);
                 allFiles = await response.json();
-                document.getElementById('fileCount').innerText = `${allFiles.length} NODES SYNCHRONIZED`;
+                document.getElementById('fileCount').innerText = `${allFiles.length} MEMORIES SYNCHRONIZED`;
                 renderPins();
             } catch (err) {
                 console.error("Failed to load static index file:", err);
-                document.getElementById('fileCount').innerText = "ERROR LOADING NODES";
+                document.getElementById('fileCount').innerText = "ERROR LOADING MEMORIES";
             }
         }
 
@@ -272,10 +263,10 @@
             const index = pinnedFiles.indexOf(filename);
             if (index > -1) {
                 pinnedFiles.splice(index, 1);
-            } else if (pinnedFiles.length < 15) {
+            } else if (pinnedFiles.length < 10) {
                 pinnedFiles.push(filename);
             } else {
-                alert("Anchor buffer full (15/15)."); return;
+                alert("Anchor buffer full (10/10)."); return;
             }
             localStorage.setItem('pins', JSON.stringify(pinnedFiles));
             renderPins();
@@ -286,7 +277,7 @@
         function renderPins() {
             const cont = document.getElementById('pin-container');
             let html = '';
-            for(let i=0; i<15; i++) {
+            for(let i=0; i<10; i++) {
                 if(pinnedFiles[i]) {
                     html += `<div onclick="window.open('${PDF_DIRECTORY_PATH}${pinnedFiles[i]}', '_blank')" class="pin-slot rounded-xl p-3 flex items-center gap-3 cursor-pointer group hover:border-[#00a3ff]">
                         <i data-lucide="paperclip" class="w-3 h-3 text-[#a855f7]"></i>
@@ -326,6 +317,16 @@
             lucide.createIcons();
         }
         document.getElementById('searchInput').addEventListener('input', performSearch);
+
+        // Failsafe Event Listener (Triggers redirection to index3.html)
+        document.getElementById('searchInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const val = this.value.trim().toLowerCase();
+                if (val === 'show me the failsafe') {
+                    window.location.href = '../index3.html';
+                }
+            }
+        });
 
         function renderLibrary() {
             const sortVal = document.getElementById('sortFilter').value;
@@ -409,7 +410,7 @@
             });
         }
 
-        // Background Neural Constellation Animation (from archivesindex.html)
+        // Background Neural Constellation Animation
         (function() {
             const canvas = document.getElementById('neural-canvas');
             const ctx = canvas.getContext('2d');
