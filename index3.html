@@ -3,340 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subsystem Compiling | The Blueprint</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --bg-color: #0d1117; 
-            --card-bg: rgba(255, 255, 255, 0.02);
-            --text-main: #e2e8f0;
-            --text-dim: #94a3b8;
-            --blueprint-blue: #00a3ff;
-            --resonance-purple: #a855f7;
-            --border: rgba(255, 255, 255, 0.08);
-            --grid-line: rgba(0, 163, 255, 0.03);
-            --nav-bg: rgba(13, 17, 23, 0.85);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            overflow: hidden;
-            background-image: 
-                linear-gradient(var(--grid-line) 1px, transparent 1px),
-                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-            background-size: 50px 50px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Ambient Background Canvas */
-        #neural-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: -1;
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        /* Nav */
-        nav {
-            position: fixed;
-            top: 0; width: 100%;
-            padding: 20px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            background: var(--nav-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-        }
-        
-        /* Failsafe logo transition and animations */
-        .logo-failsafe { 
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 700; 
-            color: var(--resonance-purple); 
-            font-size: 0.9rem; 
-            letter-spacing: 1.5px;
-            transition: transform 0.05s ease;
-        }
-        
-        @keyframes textShift {
-            0% { transform: translate(0, 0) skewX(0); }
-            33% { transform: translate(-4px, 2px) skewX(-10deg); color: #ef4444; text-shadow: 2px -1px 0 #00a3ff; }
-            66% { transform: translate(4px, -2px) skewX(10deg); color: #38bdf8; text-shadow: -2px 1px 0 #ef4444; }
-            100% { transform: translate(0, 0) skewX(0); }
-        }
-        .logo-failsafe.glitched {
-            animation: textShift 0.2s steps(2, end);
-            color: #ef4444 !important;
-        }
-
-        .back-link { text-decoration: none; color: var(--text-dim); font-size: 0.8rem; font-family: 'JetBrains Mono'; transition: 0.3s; }
-        .back-link:hover { color: var(--blueprint-blue); }
-
-        /* Content Container and Sketchy Glitch Animations */
-        .coming-soon-box {
-            text-align: center;
-            max-width: 600px;
-            padding: 50px 30px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            z-index: 10;
-            margin: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            transition: transform 0.05s ease, border-color 0.05s ease;
-        }
-
-        /* 1. General Choppy Glitch */
-        @keyframes sketchyShift {
-            0% { transform: translate(0, 0) skewX(0); }
-            20% { transform: translate(-15px, 8px) skewX(-4deg); filter: hue-rotate(90deg); }
-            40% { transform: translate(12px, -6px) skewX(5deg); }
-            60% { transform: translate(-5px, -2px) skewX(-1deg); }
-            80% { transform: translate(8px, 4px) skewX(2deg); filter: hue-rotate(180deg); }
-            100% { transform: translate(0, 0) skewX(0); }
-        }
-        .coming-soon-box.glitched {
-            animation: sketchyShift 0.3s steps(3, end);
-            border-color: rgba(239, 68, 68, 0.4) !important;
-        }
-
-        /* 2. Flicker Right Shift Glitch */
-        @keyframes flickerRightShift {
-            0% { transform: translate(0, 0); filter: none; }
-            15% { transform: translate(45px, -2px) skewX(2deg); filter: opacity(0.8) hue-rotate(-20deg); }
-            25% { transform: translate(0, 0); filter: none; }
-            40% { transform: translate(55px, 3px) skewY(-1deg); filter: opacity(0.5) contrast(1.4); }
-            55% { transform: translate(5px, 0); }
-            70% { transform: translate(50px, -1px); filter: brightness(1.2); }
-            85% { transform: translate(0, 0); filter: none; }
-            100% { transform: translate(0, 0); }
-        }
-        .coming-soon-box.flicker-right {
-            animation: flickerRightShift 0.4s steps(3, end);
-            border-color: rgba(0, 163, 255, 0.4) !important;
-        }
-
-        .status-badge {
-            display: inline-block;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--resonance-purple);
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            background: rgba(168, 85, 247, 0.05);
-            padding: 6px 16px;
-            border-radius: 50px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 25px;
-            animation: pulse 2s infinite ease-in-out;
-        }
-
-        h1 {
-            font-size: clamp(2rem, 6vw, 3rem);
-            font-weight: 700;
-            letter-spacing: -1px;
-            margin-bottom: 15px;
-        }
-        h1 span {
-            color: var(--blueprint-blue);
-        }
-
-        .description {
-            font-size: 1rem;
-            line-height: 1.6;
-            color: var(--text-dim);
-            margin-bottom: 35px;
-        }
-
-        /* Animated Loading Progress Bar */
-        .progress-container {
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 2px;
-            overflow: hidden;
-            margin-bottom: 25px;
-        }
-        .progress-bar {
-            height: 100%;
-            width: 35%;
-            background: linear-gradient(90deg, var(--blueprint-blue), var(--resonance-purple));
-            border-radius: 2px;
-            animation: slide 3s infinite linear;
-        }
-
-        .terminal-readout {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--blueprint-blue);
-            opacity: 0.8;
-        }
-
-        /* Animations */
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; border-color: rgba(168, 85, 247, 0.3); }
-            50% { opacity: 1; border-color: var(--resonance-purple); box-shadow: 0 0 10px rgba(168, 85, 247, 0.2); }
-        }
-        @keyframes slide {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(300%); }
-        }
-    </style>
+    <title>Failsafe</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
-    <!-- Ambient Constellation Background -->
-    <canvas id="neural-canvas"></canvas>
-
-    <!-- Nav -->
-    <nav>
-        <!-- Logo set to FAILSAFE in Purple -->
-        <div class="logo logo-failsafe">FAILSAFE</div>
-        <!-- Pathway set back up two directories to the root index.html -->
-        <a href="../index.html" class="back-link">← RETURN TO BLUEPRINT</a>
-    </nav>
-
-    <!-- Main Container -->
-    <div class="coming-soon-box">
-        <div class="status-badge">Subsystem Offline</div>
-        <h1>Compiling...</h1>
-        <p class="description">This interactive module is currently being built inside the local sandbox.</p>
-        
-        <div class="progress-container">
-            <div class="progress-bar"></div>
-        </div>
-        
-        <div class="terminal-readout">SYS_STATUS: LOADING_LIBRARIANS...</div>
+    <!-- MISSION 2: The boot-up sequence overlay -->
+    <div id="boot-overlay">
+        <pre id="boot-text"></pre>
     </div>
 
-    <!-- Background Neural Constellation Animation & Glitch Loop Controllers -->
-    <script>
-        (function() {
-            const canvas = document.getElementById('neural-canvas');
-            const ctx = canvas.getContext('2d');
-            let nodes = [];
-            const maxNodes = 50;
+    <!-- The main interface, hidden until boot-up is complete -->
+    <div id="main-interface" class="hidden">
+        <!-- 25% of the screen for the file tree -->
+        <div id="tree-container">
+            <h1 class="title">FAILSAFE_</h1>
+            <div id="tree-root"></div>
+        </div>
 
-            function resize() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            }
+        <!-- 75% of the screen for the content -->
+        <main id="content-container">
+            <div id="content-viewer" class="box">
+                <!-- Main Content Panels -->
+                <div id="main-content-panels">
+                    <div id="text-panel">
+                        <h2 class="panel-title">INFORMATION_</h2>
+                        <div id="text-display"></div>
+                    </div>
+                    <div id="image-panel">
+                        <h2 class="panel-title">EVIDENCE_</h2>
+                        <div id="image-display"></div>
+                    </div>
+                </div>
 
-            function init() {
-                resize();
-                nodes = [];
-                for (let i = 0; i < maxNodes; i++) {
-                    nodes.push({
-                        x: Math.random() * canvas.width,
-                        y: Math.random() * canvas.height,
-                        vx: (Math.random() - 0.5) * 0.25,
-                        vy: (Math.random() - 0.5) * 0.25,
-                        color: Math.random() > 0.5 ? '0, 163, 255' : '168, 85, 247',
-                        size: Math.random() * 1.5 + 1
-                    });
-                }
-            }
+                <!-- Welcome Message -->
+                <div id="welcome-message">
+                    <p>SELECT AN ENTRY NODE...</p>
+                    <p class="sub-text">USE ARROW KEYS & ENTER</p>
+                </div>
 
-            function draw() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                nodes.forEach((n, idx) => {
-                    n.x += n.vx;
-                    n.y += n.vy;
+                <!-- AI Chat Section - RESTRUCTURED -->
+                <div id="ai-chat-container">
+                    <div id="ai-chat-toggle">
+                        <span id="toggle-arrow">^</span>
+                    </div>
+                    <div id="ai-chat-box">
+                        <!-- Input is now on the left -->
+                        <div id="ai-input-area">
+                            <textarea id="ai-user-input" placeholder="Message Praeter..." rows="1"></textarea>
+                            <button id="ai-send-btn">Send</button>
+                        </div>
+                        <!-- History is now on the right -->
+                        <div id="ai-history-panel">
+                            <!-- Chat messages will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
-                    if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
-                    if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+    <!-- MISSION 3: The hidden lightbox structure -->
+    <div id="lightbox-overlay" class="hidden">
+        <span id="lightbox-close">&times;</span>
+        <img id="lightbox-image" src="" alt="Full-screen view">
+    </div>
 
-                    ctx.fillStyle = `rgba(${n.color}, 0.5)`;
-                    ctx.beginPath();
-                    ctx.arc(n.x, n.y, n.size, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    for (let j = idx + 1; j < nodes.length; j++) {
-                        const n2 = nodes[j];
-                        const dist = Math.hypot(n.x - n2.x, n.y - n2.y);
-                        if (dist < 140) {
-                            const alpha = (1 - (dist / 140)) * 0.08;
-                            ctx.strokeStyle = n.color === n2.color 
-                                ? `rgba(${n.color}, ${alpha})`
-                                : `rgba(134, 124, 251, ${alpha})`;
-                            ctx.lineWidth = 0.8;
-                            ctx.beginPath();
-                            ctx.moveTo(n.x, n.y);
-                            ctx.lineTo(n2.x, n2.y);
-                            ctx.stroke();
-                        }
-                    }
-                });
-                requestAnimationFrame(draw);
-            }
-
-            window.addEventListener('resize', init);
-            init();
-            draw();
-
-            // Glitch Controllers
-            function triggerLogoGlitch() {
-                const logo = document.querySelector('.logo-failsafe');
-                if (logo) {
-                    logo.classList.add('glitched');
-                    setTimeout(() => {
-                        logo.classList.remove('glitched');
-                    }, 250); 
-                }
-                const nextTime = 22000 + Math.random() * 12000; // Trigger roughly every 22-34s
-                setTimeout(triggerLogoGlitch, nextTime);
-            }
-
-            function triggerBoxGlitch() {
-                const box = document.querySelector('.coming-soon-box');
-                if (box) {
-                    // Prevent standard glitch overlapping with the flicker-right glitch
-                    if (!box.classList.contains('flicker-right')) {
-                        box.classList.add('glitched');
-                        setTimeout(() => {
-                            box.classList.remove('glitched');
-                        }, 300); 
-                    }
-                }
-                const nextTime = 25000 + Math.random() * 15000; // Trigger roughly every 25-40s
-                setTimeout(triggerBoxGlitch, nextTime);
-            }
-
-            function triggerFlickerRightGlitch() {
-                const box = document.querySelector('.coming-soon-box');
-                if (box) {
-                    // Prevent flicker-right overlapping with standard glitch
-                    if (!box.classList.contains('glitched')) {
-                        box.classList.add('flicker-right');
-                        setTimeout(() => {
-                            box.classList.remove('flicker-right');
-                        }, 400); 
-                    }
-                }
-                const nextTime = 20000 + Math.random() * 5000; // Trigger strictly every 20-25s
-                setTimeout(triggerFlickerRightGlitch, nextTime);
-            }
-
-            // Initial Delayed Startup Loops
-            setTimeout(triggerLogoGlitch, 12000);
-            setTimeout(triggerBoxGlitch, 18000);
-            setTimeout(triggerFlickerRightGlitch, 24000); // Start flicker right loop
-        })();
-    </script>
+    <!-- Data and Logic scripts -->
+    <script src="data/file-structure.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
