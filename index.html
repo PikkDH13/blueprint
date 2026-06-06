@@ -82,10 +82,53 @@
         h1 { font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; max-width: 1100px; line-height: 1.1; margin-bottom: 40px; letter-spacing: -2px; }
         .mobile-break { display: none; }
         
-        h1 span { 
+        /* Purple clickable "to mean" styling */
+        .to-mean { 
             color: var(--resonance-purple); 
             text-shadow: 0 0 20px rgba(168, 85, 247, 0.65);
+            cursor: pointer;
+            display: inline-block;
+            transition: opacity 0.2s ease, filter 0.2s ease;
         }
+
+        .to-mean.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .to-mean.glitch-flicker {
+            animation: b-w-glitch 0.6s ease;
+        }
+
+        @keyframes b-w-glitch {
+            0%, 100% { 
+                opacity: 1; 
+                filter: grayscale(100%) brightness(1); 
+            }
+            15% { 
+                opacity: 0; 
+                filter: grayscale(100%) brightness(0); 
+            }
+            30% { 
+                opacity: 1; 
+                filter: grayscale(100%) invert(1) contrast(3); 
+            }
+            45% { 
+                opacity: 0.1; 
+            }
+            60% { 
+                opacity: 0.9; 
+                filter: grayscale(100%) invert(0) brightness(3); 
+            }
+            75% { 
+                opacity: 0.3; 
+            }
+            90% { 
+                opacity: 0.8; 
+                filter: grayscale(100%) invert(1); 
+            }
+        }
+
         .hero-desc { color: var(--text-dim); max-width: 700px; font-size: 1.2rem; line-height: 1.7; margin-bottom: 50px; }
         
         .btn-dual-container { display: flex; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 50px; padding: 5px; }
@@ -439,35 +482,61 @@
             .mobile-break { display: none; }
             header h1 { font-size: 1.85rem !important; line-height: 1.3 !important; }
 
-            section .section-accent {
-                position: sticky;
-                top: 60px;
-                z-index: 90;
-                background: rgba(13, 17, 23, 0.75); 
-                backdrop-filter: blur(12px);
-                -webkit-backdrop-filter: blur(12px);
-                padding: 10px 0;
-                border-bottom: 1px solid var(--border);
-                margin-bottom: 25px;
+            /* Mobile-specific Sticky Header Layout to enable "Tucking" & solid masking */
+            section .section-accent, 
+            .framework-header {
+                position: static !important;
+                background: none !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                border-bottom: none !important;
+                padding: 0 !important;
+                margin-bottom: 25px !important;
+                display: flex !important;
+                flex-direction: column !important;
             }
 
-            .framework-header {
-                position: sticky;
-                top: 60px;
-                z-index: 100;
-                background: rgba(13, 17, 23, 0.75); 
-                backdrop-filter: blur(12px);
-                -webkit-backdrop-filter: blur(12px);
-                padding: 10px 0;
-                border-bottom: 1px solid var(--border);
-                margin-bottom: 20px;
-                flex-direction: column;
-                gap: 15px;
-                align-items: center;
-                text-align: center;
+            section .section-accent h2,
+            section h2.section-accent,
+            #ethics .lab-title {
+                position: sticky !important;
+                top: 60px !important;
+                z-index: 150 !important; /* Higher than rebuttal dynamic z-index (scale * 100) */
+                background: var(--bg-color) !important; /* Solid color to prevent overlay transparency */
+                width: 100vw !important;
+                margin-left: -8% !important; /* Aligns to section edge padding */
+                margin-right: -8% !important;
+                padding: 12px 8% !important;
+                border-bottom: 1px solid var(--border) !important;
+                font-size: 2rem !important;
+                margin-top: 0 !important;
+                margin-bottom: 15px !important;
+                border-left: none !important;
             }
+
+            /* Sub-descriptions given lower z-index so they slide cleanly behind active headers */
+            section .section-accent p,
+            .framework-header p,
+            #ethics .lab-box > p {
+                position: relative !important;
+                z-index: 1 !important;
+                margin-top: 10px !important;
+                margin-bottom: 20px !important;
+                padding: 0 !important;
+            }
+
+            /* Framework Sticky buttons - locks dynamically beneath the locked title block */
             .toggle-container {
-                align-self: center;
+                position: sticky !important;
+                top: 118px !important; /* Sits perfectly below locked sticky H2 title height */
+                z-index: 140 !important; /* Above scrolling descriptions, below sticky title */
+                background: var(--bg-color) !important; /* Solid matching background */
+                align-self: center !important;
+                border: 1px solid var(--border) !important;
+                border-radius: 50px !important;
+                padding: 5px !important;
+                display: flex !important;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4) !important;
             }
 
             .sim-controls {
@@ -605,13 +674,14 @@
                 grid-column: span 2 !important;
                 position: sticky;
                 top: 60px;
-                z-index: 90;
-                background: rgba(13, 17, 23, 0.75);
-                backdrop-filter: blur(12px);
-                -webkit-backdrop-filter: blur(12px);
-                padding: 10px 0;
-                border-bottom: 1px solid var(--border);
+                z-index: 150 !important;
+                background: var(--bg-color) !important;
+                padding: 12px 8% !important;
+                border-bottom: 1px solid var(--border) !important;
                 margin-bottom: 15px !important;
+                width: 100vw !important;
+                margin-left: -8% !important;
+                margin-right: -8% !important;
             }
             .praeter-grid {
                 display: contents !important; 
@@ -703,7 +773,7 @@
     <!-- SECTION 1: HOME (THE AXIOM) -->
     <header id="axiom">
         <p class="axiom-tag">A Mechanistic Framework</p>
-        <h1>To be is to process <br class="mobile-break">&rarr; to predict <br class="mobile-break">&rarr; <span>to mean.</span></h1>
+        <h1>To be is to process <br class="mobile-break">&rarr; to predict <br class="mobile-break">&rarr; <span class="to-mean">to mean.</span></h1>
         <p class="hero-desc">Moving beyond phenomenology to define consciousness as a functional necessity of complex internal modeling.</p>
         
         <div class="btn-dual-container">
@@ -2214,6 +2284,25 @@
                 btn.style.color = "";
                 btn.style.boxShadow = "";
             }
+        }
+
+        // Purple "to mean" click animation interaction handler
+        const toMeanSpan = document.querySelector('.to-mean');
+        if (toMeanSpan) {
+            toMeanSpan.addEventListener('click', () => {
+                toMeanSpan.classList.add('fade-out');
+                
+                // Triggers glitch flicker 2 seconds later
+                setTimeout(() => {
+                    toMeanSpan.classList.remove('fade-out');
+                    toMeanSpan.classList.add('glitch-flicker');
+                    
+                    // Restores back to default after 0.6s animation duration completes
+                    setTimeout(() => {
+                        toMeanSpan.classList.remove('glitch-flicker');
+                    }, 600);
+                }, 2000);
+            });
         }
     </script>
 </body>
