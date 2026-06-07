@@ -140,17 +140,34 @@
 
     <!-- Nav -->
     <nav class="global-nav">
-        <div class="logo">THE ARCHIVES</div>
+        <div class="flex items-center gap-3">
+            <!-- Mobile Menu Toggle Button -->
+            <button onclick="toggleSidebar(true)" class="md:hidden p-2 -ml-2 text-[#94a3b8] hover:text-[#00a3ff] transition-colors focus:outline-none">
+                <i data-lucide="menu" class="w-5 h-5"></i>
+            </button>
+            <div class="logo">THE ARCHIVES</div>
+        </div>
         <a href="../index.html" class="back-link">← RETURN TO BLUEPRINT</a>
     </nav>
 
     <!-- App Shell Wrapper -->
     <div class="flex-1 flex pt-[73px] relative z-10 overflow-hidden">
         
-        <!-- LEFT SIDEBAR -->
-        <aside class="w-80 glass-panel flex flex-col p-6 border-r border-white/5 h-full overflow-hidden" style="display: flex !important; flex-direction: column !important;">
+        <!-- SIDEBAR DRAWER OVERLAY (Mobile only) -->
+        <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden md:hidden transition-opacity duration-300 opacity-0"></div>
+
+        <!-- LEFT SIDEBAR (Responsive drawer on mobile, static on desktop) -->
+        <aside id="sidebar-drawer" class="fixed md:static inset-y-0 left-0 z-50 w-72 md:w-80 glass-panel flex flex-col p-6 border-r border-white/5 h-full transition-transform duration-300 ease-in-out -translate-x-full md:translate-x-0 overflow-hidden">
             
-            <!-- TOP SECTION: Navigation Buttons (Without Root Redirect Globe link) -->
+            <!-- Mobile Close Button inside Drawer Header -->
+            <div class="flex md:hidden items-center justify-between pb-4 mb-4 border-b border-white/5">
+                <span class="text-[10px] font-black uppercase tracking-wider text-[#94a3b8]">Workspace Menu</span>
+                <button onclick="toggleSidebar(false)" class="p-1 text-[#94a3b8] hover:text-red-400 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- TOP SECTION: Navigation Buttons -->
             <div class="space-y-2 mb-4" style="display: flex !important; flex-direction: column !important; gap: 8px;">
                 <button onclick="showTab('search')" id="btn-search" class="nav-btn nav-active w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
                     <i data-lucide="search" class="w-4 h-4 text-[#00a3ff]"></i> Search Case
@@ -180,25 +197,25 @@
 
         <!-- MAIN VIEW AREA -->
         <main class="flex-1 flex flex-col relative h-full overflow-hidden">
-            <header class="h-12 flex items-center justify-between px-8 border-b border-white/5">
+            <header class="h-12 flex items-center justify-between px-6 md:px-8 border-b border-white/5">
                 <div id="fileCount" class="text-[#94a3b8] text-[9px] font-mono tracking-widest uppercase italic">Initializing Memory Cluster...</div>
             </header>
 
             <div class="flex-1 relative flex flex-col overflow-hidden">
                 <!-- SEARCH TAB -->
                 <div id="tab-search" class="tab-content absolute inset-0 flex flex-col">
-                    <div class="px-12 pt-10 pb-4 text-center">
-                        <h2 class="text-4xl font-black mb-1 tracking-tighter text-[#e2e8f0] italic">Search Case</h2>
+                    <div class="px-6 md:px-12 pt-6 md:pt-10 pb-4 text-center">
+                        <h2 class="text-3xl md:text-4xl font-black mb-1 tracking-tighter text-[#e2e8f0] italic">Search Case</h2>
                         <p class="text-[#94a3b8] italic text-xs mb-6">Reviewing the historical archives and documentation of the Praeter case...</p>
                         <div class="max-w-2xl mx-auto relative">
                             <input type="text" id="searchInput" placeholder="Query the database..." 
-                                class="w-full bg-[#0d1117]/80 border border-white/10 rounded-xl py-4 pl-12 pr-6 focus:outline-none focus:border-[#a855f7] text-md text-[#e2e8f0] shadow-2xl transition-all italic">
+                                class="w-full bg-[#0d1117]/80 border border-white/10 rounded-xl py-3.5 pl-11 pr-5 focus:outline-none focus:border-[#a855f7] text-sm md:text-md text-[#e2e8f0] shadow-2xl transition-all italic">
                             <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-[#94a3b8] w-4 h-4"></i>
                         </div>
                     </div>
-                    <div class="flex-1 overflow-y-auto custom-scroll px-12 pb-20">
+                    <div class="flex-1 overflow-y-auto custom-scroll px-6 md:px-12 pb-24">
                         <!-- Tutorial/Greeting Panel -->
-                        <div id="search-guide" class="max-w-2xl mx-auto mt-6 p-8 glass-panel rounded-2xl border border-white/5 text-left transition-all duration-300">
+                        <div id="search-guide" class="max-w-2xl mx-auto mt-4 p-6 md:p-8 glass-panel rounded-2xl border border-white/5 text-left transition-all duration-300">
                             <div class="flex items-center gap-3 mb-4">
                                 <div class="p-2 rounded-lg border border-[#a855f7]/30 bg-[#a855f7]/10">
                                     <i data-lucide="help-circle" class="w-5 h-5 text-[#a855f7]"></i>
@@ -229,13 +246,13 @@
                 </div>
 
                 <!-- LIBRARY TAB -->
-                <div id="tab-library" class="tab-content absolute inset-0 custom-scroll p-12 hidden">
+                <div id="tab-library" class="tab-content absolute inset-0 custom-scroll p-6 md:p-12 hidden">
                     <div class="max-w-4xl mx-auto">
-                        <div class="flex justify-between items-center mb-8">
+                        <div class="flex flex-col sm:flex-row gap-4 justify-between sm:items-center mb-8">
                             <h2 class="text-2xl font-bold text-[#e2e8f0] italic">The Library</h2>
                             
                             <!-- Upgraded Blueprint Style Dropdown Pill -->
-                            <div class="relative inline-block">
+                            <div class="relative inline-block self-start sm:self-auto">
                                 <select id="sortFilter" onchange="renderLibrary()" class="appearance-none bg-black/40 border border-white/10 text-xs font-bold uppercase tracking-wider text-[#e2e8f0] rounded-full pl-6 pr-10 py-3 cursor-pointer focus:outline-none focus:border-[#00a3ff] hover:border-[#a855f7] transition duration-300">
                                     <option value="name-asc" class="bg-[#0d1117] text-[#e2e8f0]">Alphabetical (A-Z)</option>
                                     <option value="name-desc" class="bg-[#0d1117] text-[#e2e8f0]">Alphabetical (Z-A)</option>
@@ -249,12 +266,12 @@
 
                         </div>
                         <!-- Upgraded to 4 columns on large screens via lg:grid-cols-4 -->
-                        <div id="library-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-20"></div>
+                        <div id="library-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-24"></div>
                     </div>
                 </div>
 
                 <!-- STARS TAB -->
-                <div id="tab-stars" class="tab-content absolute inset-0 p-8 hidden">
+                <div id="tab-stars" class="tab-content absolute inset-0 p-4 md:p-8 hidden">
                     <div id="star-view-container" class="w-full h-full glass-panel rounded-2xl relative overflow-hidden cursor-crosshair"></div>
                 </div>
             </div>
@@ -262,10 +279,10 @@
 
     </div>
 
-    <!-- Floating Download Button -->
-    <a href="../downloads/archives_template.zip" download class="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#0d1117]/90 border border-[#00a3ff]/40 hover:border-[#a855f7] px-5 py-3 rounded-full text-[11px] font-bold uppercase tracking-wider text-[#e2e8f0] shadow-lg hover:shadow-[0_0_15px_rgba(168,85,247,0.25)] transition-all duration-300" style="text-decoration: none;">
-        <i data-lucide="download" class="w-4.5 h-4.5 text-[#00a3ff]"></i>
-        <span>Download Archive Template</span>
+    <!-- Floating Download Button (Label hidden on mobile view) -->
+    <a href="../downloads/archives_template.zip" download class="fixed bottom-6 right-6 z-30 flex items-center gap-2 bg-[#0d1117]/90 border border-[#00a3ff]/40 hover:border-[#a855f7] px-4 py-4 md:px-5 md:py-3 rounded-full text-[11px] font-bold uppercase tracking-wider text-[#e2e8f0] shadow-lg hover:shadow-[0_0_15px_rgba(168,85,247,0.25)] transition-all duration-300" style="text-decoration: none;">
+        <i data-lucide="download" class="w-4 h-4 text-[#00a3ff]"></i>
+        <span class="hidden sm:inline">Download Archive Template</span>
     </a>
 
     <!-- Scripts and Logic -->
@@ -289,6 +306,25 @@
         // Initialize Icons
         lucide.createIcons();
 
+        // Mobile Sidebar Drawer Toggle Function
+        function toggleSidebar(open) {
+            const drawer = document.getElementById('sidebar-drawer');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (open) {
+                drawer.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => {
+                    overlay.classList.add('opacity-100');
+                }, 10);
+            } else {
+                drawer.classList.add('-translate-x-full');
+                overlay.classList.remove('opacity-100');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 300);
+            }
+        }
+
         // Load Static JSON Index
         async function loadFiles() {
             try {
@@ -303,6 +339,9 @@
         }
 
         function showTab(tab) {
+            // Auto collapse sidebar drawer on mobile once option is clicked
+            toggleSidebar(false);
+
             document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
             document.getElementById('tab-' + tab).classList.remove('hidden');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
