@@ -150,7 +150,7 @@
         <!-- LEFT SIDEBAR -->
         <aside class="w-80 glass-panel flex flex-col p-6 border-r border-white/5 h-full overflow-hidden" style="display: flex !important; flex-direction: column !important;">
             
-            <!-- TOP SECTION: Navigation Buttons -->
+            <!-- TOP SECTION: Navigation Buttons (Without Root Redirect Globe link) -->
             <div class="space-y-2 mb-4" style="display: flex !important; flex-direction: column !important; gap: 8px;">
                 <button onclick="showTab('search')" id="btn-search" class="nav-btn nav-active w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
                     <i data-lucide="search" class="w-4 h-4 text-[#00a3ff]"></i> Search Case
@@ -161,9 +161,6 @@
                 <button onclick="showTab('stars')" id="btn-stars" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
                     <i data-lucide="sparkles" class="w-4 h-4 text-[#00a3ff]"></i> Star View
                 </button>
-                <a href="../index.html" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
-                    <i data-lucide="globe" class="w-4 h-4 text-[#94a3b8]"></i> The Blueprint
-                </a>
             </div>
             
             <!-- MID SECTION: Glowing Blueprint-Blue Divider -->
@@ -251,7 +248,8 @@
                             </div>
 
                         </div>
-                        <div id="library-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-20"></div>
+                        <!-- Upgraded to 4 columns on large screens via lg:grid-cols-4 -->
+                        <div id="library-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-20"></div>
                     </div>
                 </div>
 
@@ -433,15 +431,16 @@
                 p.rebuildStars = () => {
                     stars = [];
                     for(let i=0; i<allFiles.length; i++) {
-                        let seedX = seedFromString(allFiles[i].name + "_coords_X");
-                        let seedY = seedFromString(allFiles[i].name + "_coords_Y");
-                        let seedColor = seedFromString(allFiles[i].name + "_element_hue");
+                        // Scattered coordinate hash implementation using prepended string offsets
+                        let seedX = seedFromString("X_" + allFiles[i].name);
+                        let seedY = seedFromString("Y_" + allFiles[i].name);
+                        let seedColor = seedFromString("COLOR_" + allFiles[i].name);
                         
                         stars.push({ 
                             x: p.map(seedX, 0, 1, p.width * 0.08, p.width * 0.92), 
                             y: p.map(seedY, 0, 1, p.height * 0.08, p.height * 0.92), 
                             name: allFiles[i].name, 
-                            r: p.map(seedFromString(allFiles[i].name + "_volume_sz"), 0, 1, 4.5, 7), 
+                            r: p.map(seedFromString("SIZE_" + allFiles[i].name), 0, 1, 4.5, 7), 
                             t: seedColor * 100
                         });
                     }
