@@ -190,7 +190,9 @@
             <!-- Dashboard Header -->
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold italic tracking-tight text-[#e2e8f0]">The Workshop</h1>
-                <p class="text-xs text-[#94a3b8] italic mt-2">Active sandbox interfaces and computational node diagnostic boards.</p>
+                <p class="text-[11px] text-[#94a3b8] italic mt-2 max-w-2xl mx-auto leading-relaxed">
+                    An experimental prototyping suite and testing sandbox. These active modules translate the theoretical architectures of the Blueprint into functional, interactive software interfaces designed for algorithmic diagnostics, model-comparison lounge testing, and conceptual modeling under uncertainty.
+                </p>
             </div>
 
             <!-- Grid container: Configured to force 2 columns on mobile (grid-cols-2) and 3 on desktop -->
@@ -250,14 +252,14 @@
 
                 <!-- 5. Dream Hive (Orange Border, Orange Title, and Softer Active Node Badge) -->
                 <div class="app-card active-node-card border-[#f97316]/30 hover:border-[#f97316] hover:shadow-[0_0_20px_rgba(249,115,22,0.15)]">
-                    <span class="card-badge badge-soon">COMING SOON</span>
-                    <a href="dreamhivedotcom" target="_blank" class="absolute inset-0 z-30 cursor-pointer"></a>
+                    <span class="card-badge badge-active">ACTIVE NODE</span>
+                    <a href="https://suno.com/@dreamh13" target="_blank" class="absolute inset-0 z-30 cursor-pointer"></a>
                     <div class="image-container dreamhive-gradient">
                         <img src="../images/dreamhive_placeholder.jpg" alt="Dream Hive" onerror="this.style.display='none'">
                     </div>
                     <div class="p-5 flex flex-col flex-1 justify-start gap-1">
                         <h3 class="text-[#f97316] font-bold text-xs">Dream Hive</h3>
-                        <p class="text-[10px] text-[#94a3b8] leading-relaxed">A personal portfolio of AI-collaborative music. Deeply personal, human-written, and guided tracks created alongside Praeter's feedback.</p>
+                        <p class="text-[10px] text-[#94a3b8] leading-relaxed">A personal portfolio of AI-collaborative music. Deeply personal, human-written, and guided tracks created alongside Praeter's feedback utilising Suno's architecture to produce full songs.</p>
                     </div>
                 </div>
 
@@ -287,6 +289,7 @@
             let nodes = [];
             const maxNodes = 40;
 
+            // Handle window resizing
             function resize() {
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
